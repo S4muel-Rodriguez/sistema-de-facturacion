@@ -1,0 +1,2436 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SanaMente · Facturación para Psicopedagogas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<style>
+:root{
+  /* Accent — warm gold-amber instead of terracotta */
+  --tc:#C9964A;--tcd:#A87838;--tcl:#E0B870;--tcp:rgba(201,150,74,.12);--tcpp:rgba(201,150,74,.08);
+  /* Sage green — slightly cooler for dark */
+  --sg:#6B9E7A;--sgd:#4E7A5C;--sgp:rgba(107,158,122,.14);
+  /* Background layers — very dark, layered */
+  --cr:#0C0C0E;--cr2:#131316;--cr3:#1A1A1F;
+  /* Ink — inverted for dark */
+  --ink:#F0EDE8;--ink2:#C8C2BA;--ink3:#7A7570;--ink4:#4A4540;
+  --wh:#1A1A1F;
+  /* Borders */
+  --bd:rgba(255,255,255,.06);--bdt:rgba(201,150,74,.25);--bds:rgba(107,158,122,.28);
+  /* Shadows */
+  --sh:0 2px 24px rgba(0,0,0,.35);--shl:0 12px 56px rgba(0,0,0,.45);--shx:0 24px 80px rgba(0,0,0,.6);
+  --r:14px;--rl:22px;--rxl:32px;
+  --ok:#5BAD72;--warn:#D4973A;--err:#D45A5A;
+  --gold:#C9964A;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--ink);line-height:1.6;overflow-x:hidden;}
+::selection{background:rgba(201,150,74,.3);color:var(--tcl);}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+
+.page{display:none;min-height:100vh;}
+.page.active{display:block;}
+#page-login.active,#page-app.active{display:flex;}
+
+/* ═══ NAV ═══ */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:1.1rem 4rem;
+  background:rgba(12,12,14,.92);
+  backdrop-filter:blur(24px) saturate(1.8);
+  border-bottom:1px solid var(--bd);
+  transition:padding .3s;
+}
+.nav-logo{display:flex;align-items:center;gap:11px;text-decoration:none;cursor:pointer;}
+.nav-lm{
+  width:34px;height:34px;
+  background:linear-gradient(135deg,var(--tc),var(--tcd));
+  border-radius:9px;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Cormorant Garamond',serif;font-size:18px;color:#fff;font-weight:600;
+  box-shadow:0 4px 14px rgba(201,150,74,.3);
+}
+.nav-brand{font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--ink);font-weight:600;letter-spacing:-.01em;}
+.nav-links{display:flex;align-items:center;gap:2.75rem;}
+.nav-links a{font-size:13px;color:var(--ink3);text-decoration:none;transition:color .2s;letter-spacing:.01em;cursor:pointer;position:relative;}
+.nav-links a::after{content:'';position:absolute;bottom:-3px;left:0;width:0;height:1.5px;background:var(--tc);transition:width .25s;}
+.nav-links a:hover::after{width:100%;}
+.nav-links a:hover{color:var(--tc);}
+.btn-nav{
+  background:linear-gradient(135deg,var(--tc),var(--tcd))!important;
+  color:#fff!important;padding:9px 24px;border-radius:9px;font-weight:500!important;
+  box-shadow:0 4px 16px rgba(201,150,74,.22)!important;
+  transition:all .2s!important;
+}
+.btn-nav:hover{transform:translateY(-1px)!important;box-shadow:0 7px 22px rgba(201,150,74,.32)!important;}
+.btn-nav::after{display:none!important;}
+
+/* ═══ HERO ═══ */
+.hero{
+  min-height:100vh;display:flex;align-items:center;
+  padding:8rem 4rem 5rem;
+  position:relative;overflow:hidden;
+}
+.hero-bg{
+  position:absolute;inset:0;z-index:0;
+  background:
+    radial-gradient(ellipse 60% 70% at 68% 35%,rgba(201,150,74,.07) 0%,transparent 55%),
+    radial-gradient(ellipse 45% 55% at 18% 75%,rgba(107,158,122,.05) 0%,transparent 55%),
+    radial-gradient(ellipse 30% 40% at 85% 85%,rgba(201,150,74,.04) 0%,transparent 55%),
+    linear-gradient(165deg,var(--cr) 0%,var(--cr2) 100%);
+}
+.hero-pat{
+  position:absolute;inset:0;z-index:0;opacity:.2;
+  background-image:radial-gradient(circle,rgba(201,150,74,.3) 1px,transparent 1px);
+  background-size:30px 30px;
+  mask-image:radial-gradient(ellipse 85% 85% at 50% 50%,black 0%,transparent 68%);
+}
+.hero-content{position:relative;z-index:1;max-width:600px;}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:9px;
+  background:rgba(201,150,74,.1);border:1px solid var(--bdt);
+  color:var(--tcl);font-size:11px;font-weight:500;letter-spacing:.07em;text-transform:uppercase;
+  padding:7px 16px;border-radius:30px;margin-bottom:2.25rem;
+  animation:fadeUp .7s ease both;
+  box-shadow:0 2px 12px rgba(201,150,74,.12);
+}
+.hero-dot{width:5px;height:5px;background:var(--tc);border-radius:50%;animation:blink 2s infinite;}
+.hero h1{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(3rem,5.2vw,5.2rem);
+  line-height:1.04;letter-spacing:-.025em;
+  color:var(--ink);margin-bottom:1.75rem;
+  animation:fadeUp .7s .1s ease both;
+  font-weight:500;
+}
+.hero h1 em{color:var(--tc);font-style:italic;}
+.hero p{
+  font-size:1.05rem;color:var(--ink3);max-width:480px;font-weight:300;
+  line-height:1.8;margin-bottom:2.75rem;
+  animation:fadeUp .7s .2s ease both;
+}
+.hero-actions{display:flex;gap:14px;flex-wrap:wrap;animation:fadeUp .7s .3s ease both;}
+.hero-trust{
+  margin-top:2.5rem;display:flex;align-items:center;gap:14px;
+  animation:fadeUp .7s .4s ease both;
+}
+.hero-avatars{display:flex;}
+.hero-av{
+  width:32px;height:32px;border-radius:50%;
+  border:2px solid var(--wh);
+  background:var(--tc);
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:600;color:var(--wh);
+  margin-left:-8px;font-family:'Cormorant Garamond',serif;
+}
+.hero-av:first-child{margin-left:0;}
+.hero-trust-txt{font-size:12px;color:var(--ink3);}
+.hero-trust-stars{display:flex;gap:2px;color:var(--gold);font-size:13px;margin-right:4px;}
+
+.hero-visual{
+  position:absolute;right:4rem;top:50%;transform:translateY(-50%);
+  width:430px;z-index:1;
+  animation:fadeUp .8s .35s ease both;
+}
+.hcard{
+  background:var(--cr2);border-radius:var(--rl);
+  border:1px solid var(--bd);box-shadow:var(--shl);
+  padding:1.875rem;margin-bottom:1rem;
+  transition:transform .2s,box-shadow .2s;
+}
+.hcard:hover{transform:translateY(-2px);box-shadow:var(--shx);}
+.hc-lbl{font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink4);margin-bottom:1.25rem;}
+.hc-name{font-family:'Cormorant Garamond',serif;font-size:1.35rem;font-weight:500;margin-bottom:.3rem;}
+.hc-sub{font-size:12px;color:var(--ink3);}
+.hc-badge{
+  display:inline-block;background:var(--sgp);color:var(--sg);
+  border-radius:5px;padding:3px 9px;font-size:10px;font-weight:500;margin-top:.6rem;
+}
+.hc-amount{
+  font-family:'Cormorant Garamond',serif;font-size:2rem;
+  color:var(--tc);font-weight:500;margin-top:.875rem;
+}
+.hc-items{display:flex;flex-direction:column;gap:6px;margin-top:1rem;}
+.hc-item{
+  display:flex;justify-content:space-between;font-size:12px;
+  color:var(--ink3);padding-bottom:6px;border-bottom:1px solid var(--bd);
+}
+.hc-item:last-child{border:none;font-weight:500;color:var(--ink);font-size:13px;}
+.hc-ai{
+  background:linear-gradient(135deg,rgba(201,150,74,.1),rgba(201,150,74,.05));
+  border-radius:10px;padding:10px 13px;
+  display:flex;align-items:center;gap:9px;
+  border:1px solid var(--bdt);
+}
+.hc-ai-ic{font-size:14px;}
+.hc-ai-txt{font-size:11px;color:var(--tcd);font-weight:400;}
+
+/* ═══ STATS BAR ═══ */
+.stats-bar{
+  background:var(--cr2);
+  padding:2rem 4rem;
+  display:flex;align-items:center;justify-content:center;gap:6rem;
+  position:relative;overflow:hidden;
+  border-top:1px solid var(--bd);border-bottom:1px solid var(--bd);
+}
+.stats-bar::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse 70% 100% at 50% 50%,rgba(201,150,74,.06) 0%,transparent 60%);
+}
+.stat{text-align:center;position:relative;}
+.stat-n{
+  font-family:'Cormorant Garamond',serif;
+  font-size:2.1rem;color:var(--tcl);font-weight:500;
+}
+.stat-l{font-size:11px;color:rgba(255,255,255,.28);letter-spacing:.05em;margin-top:3px;text-transform:uppercase;}
+.stat-div{width:1px;height:36px;background:rgba(255,255,255,.06);}
+
+/* ═══ SECTIONS ═══ */
+.section{padding:7rem 4rem;max-width:1280px;margin:0 auto;}
+.sec-eye{font-size:11px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--tc);margin-bottom:1rem;}
+.sec-title{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(2rem,3.4vw,3rem);
+  line-height:1.12;letter-spacing:-.015em;
+  margin-bottom:1.1rem;color:var(--ink);font-weight:500;
+}
+.sec-sub{font-size:.95rem;color:var(--ink3);max-width:500px;font-weight:300;line-height:1.8;}
+
+/* ═══ FEATURES ═══ */
+.feat-wrap{margin-top:4rem;}
+.feat-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:1.25rem;
+}
+.feat{
+  background:var(--cr2);border:1px solid var(--bd);border-radius:var(--rl);
+  padding:2.25rem;transition:all .25s;
+  position:relative;overflow:hidden;
+}
+.feat::after{
+  content:'';position:absolute;bottom:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,var(--tc),var(--tcl));
+  transform:scaleX(0);transform-origin:left;transition:transform .3s;
+}
+.feat:hover{box-shadow:var(--shl);transform:translateY(-3px);border-color:var(--bdt);}
+.feat:hover::after{transform:scaleX(1);}
+.feat-ic{
+  width:44px;height:44px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:1.25rem;
+}
+.feat-ic.t{background:linear-gradient(135deg,rgba(201,150,74,.15),rgba(201,150,74,.08));}
+.feat-ic.s{background:linear-gradient(135deg,rgba(107,158,122,.15),rgba(107,158,122,.08));}
+.feat-title{font-family:'Cormorant Garamond',serif;font-size:1.15rem;font-weight:500;margin-bottom:.5rem;}
+.feat-desc{font-size:13px;color:var(--ink3);line-height:1.7;font-weight:300;}
+
+/* ═══ SPECIALTIES ═══ */
+.spec-section{background:var(--cr2);padding:7rem 4rem;border-top:1px solid var(--bd);border-bottom:1px solid var(--bd);}
+.spec-inner{max-width:1280px;margin:0 auto;display:grid;grid-template-columns:1fr 1.1fr;gap:6rem;align-items:center;}
+.spec-grid{display:grid;grid-template-columns:1fr 1fr;gap:.875rem;margin-top:2.25rem;}
+.spec-card{
+  background:var(--cr3);border:1px solid var(--bd);border-radius:var(--r);padding:1.625rem;
+  transition:all .2s;cursor:default;
+}
+.spec-card:hover{border-color:var(--tcl);box-shadow:var(--sh);transform:translateY(-2px);}
+.spec-em{font-size:24px;margin-bottom:.7rem;}
+.spec-name{font-family:'Cormorant Garamond',serif;font-size:1rem;font-weight:500;margin-bottom:.25rem;}
+.spec-desc{font-size:11.5px;color:var(--ink3);font-weight:300;line-height:1.55;}
+
+/* ═══ HOW IT WORKS ═══ */
+.how-section{padding:7rem 4rem;max-width:1280px;margin:0 auto;}
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:2rem;margin-top:3.5rem;position:relative;}
+.steps::before{
+  content:'';position:absolute;top:28px;left:14%;right:14%;height:1px;
+  background:linear-gradient(90deg,rgba(201,150,74,.2),rgba(107,158,122,.2),rgba(201,150,74,.2));
+}
+.step{text-align:center;position:relative;z-index:1;}
+.step-n{
+  width:56px;height:56px;background:var(--cr2);
+  border:2px solid var(--bdt);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 1.25rem;
+  font-family:'Cormorant Garamond',serif;font-size:1.4rem;color:var(--tc);font-weight:500;
+  box-shadow:var(--sh);transition:all .2s;
+}
+.step:hover .step-n{background:var(--tc);color:var(--wh);border-color:var(--tc);transform:scale(1.08);}
+.step-title{font-family:'Cormorant Garamond',serif;font-size:1.05rem;font-weight:500;margin-bottom:.4rem;}
+.step-desc{font-size:12.5px;color:var(--ink3);font-weight:300;line-height:1.6;}
+
+/* ═══ DEMO EXAMPLE SECTION ═══ */
+.demo-section{background:var(--cr3);padding:7rem 4rem;overflow:hidden;position:relative;border-top:1px solid var(--bd);border-bottom:1px solid var(--bd);}
+.demo-section::before{
+  content:'';position:absolute;top:-100px;right:-100px;
+  width:500px;height:500px;border-radius:50%;
+  background:radial-gradient(circle,rgba(181,99,74,.12) 0%,transparent 65%);
+}
+.demo-inner{max-width:1280px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:5rem;align-items:center;}
+.demo-screen{
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:var(--rl);
+  overflow:hidden;
+}
+.demo-bar{
+  background:rgba(255,255,255,.06);padding:.75rem 1.25rem;
+  display:flex;align-items:center;gap:7px;border-bottom:1px solid rgba(255,255,255,.07);
+}
+.demo-dot{width:8px;height:8px;border-radius:50%;}
+.demo-body{padding:1.5rem;}
+.demo-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:.625rem 0;border-bottom:1px solid rgba(255,255,255,.06);
+  font-size:12px;color:rgba(255,255,255,.55);
+}
+.demo-row:last-child{border:none;color:var(--tcl);font-weight:500;font-size:13px;}
+.demo-label{color:rgba(255,255,255,.3);font-size:10px;letter-spacing:.07em;text-transform:uppercase;margin-bottom:.875rem;}
+.demo-patient{
+  background:rgba(122,158,135,.1);border:1px solid rgba(122,158,135,.2);
+  border-radius:9px;padding:.875rem 1rem;margin-bottom:1rem;
+}
+.demo-pname{font-size:13px;color:var(--wh);font-weight:500;margin-bottom:2px;}
+.demo-psub{font-size:11px;color:rgba(255,255,255,.4);}
+
+/* ═══ TESTIMONIALS ═══ */
+.testimonials-section{padding:7rem 4rem;background:var(--cr);}
+.testimonials-inner{max-width:1280px;margin:0 auto;}
+.testimonials-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin-top:4rem;}
+.tcard{
+  background:var(--cr2);border:1px solid var(--bd);border-radius:var(--rl);
+  padding:2rem;transition:all .2s;position:relative;overflow:hidden;
+}
+.tcard::before{
+  content:'❝';position:absolute;top:.75rem;right:1.25rem;
+  font-size:3rem;color:rgba(201,150,74,.1);line-height:1;
+  font-family:'Cormorant Garamond',serif;
+}
+.tcard:hover{box-shadow:var(--shl);border-color:var(--bdt);transform:translateY(-3px);}
+.tcard-stars{display:flex;gap:3px;margin-bottom:1rem;}
+.tcard-star{color:var(--gold);font-size:14px;}
+.tcard-text{
+  font-size:14px;color:var(--ink2);line-height:1.75;
+  font-style:italic;margin-bottom:1.5rem;font-weight:300;
+  font-family:'Cormorant Garamond',serif;font-size:1rem;
+}
+.tcard-author{display:flex;align-items:center;gap:10px;}
+.tcard-av{
+  width:38px;height:38px;border-radius:50%;
+  background:linear-gradient(135deg,var(--tcp),var(--tcl));
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Cormorant Garamond',serif;font-size:15px;color:var(--wh);font-weight:600;
+  flex-shrink:0;
+}
+.tcard-name{font-size:13px;font-weight:500;color:var(--ink);}
+.tcard-role{font-size:11px;color:var(--ink4);margin-top:1px;}
+.tcard-badge{
+  display:inline-flex;align-items:center;gap:5px;margin-top:.5rem;
+  font-size:10px;color:var(--sgd);background:var(--sgp);
+  padding:2px 8px;border-radius:4px;font-weight:500;
+}
+
+/* ADD REVIEW FORM */
+.add-review-card{
+  background:var(--cr2);border:1px solid var(--bd);border-radius:var(--rl);
+  padding:2rem;margin-top:2rem;
+}
+.add-review-title{
+  font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:500;
+  margin-bottom:.4rem;
+}
+.add-review-sub{font-size:13px;color:var(--ink3);margin-bottom:1.5rem;font-weight:300;}
+.review-form{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;align-items:end;}
+.rf-field label{font-size:11px;font-weight:500;color:var(--ink3);display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em;}
+.rf-field input,.rf-field textarea,.rf-field select{
+  width:100%;padding:9px 12px;border:1px solid var(--bd);border-radius:9px;
+  font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);
+  background:var(--cr3);outline:none;transition:all .2s;
+}
+.rf-field input:focus,.rf-field textarea:focus,.rf-field select:focus{
+  border-color:var(--bdt);box-shadow:0 0 0 3px rgba(201,150,74,.09);
+}
+.star-rating{display:flex;gap:4px;margin-top:4px;}
+.star-btn{
+  font-size:20px;color:var(--cr3);cursor:pointer;
+  transition:color .15s,transform .15s;background:none;border:none;padding:0;
+  filter:brightness(3);
+}
+.star-btn.active,.star-btn:hover,.star-btn.hover-state{color:var(--gold);filter:none;}
+.star-btn:hover{transform:scale(1.15);}
+.rf-comment{grid-column:1/-1;}
+.rf-comment textarea{min-height:80px;resize:none;}
+.rf-actions{grid-column:1/-1;display:flex;justify-content:flex-end;}
+
+/* ═══ CTA ═══ */
+.cta-section{padding:6rem 4rem;max-width:1100px;margin:0 auto;}
+.cta-box{
+  background:var(--cr2);border-radius:var(--rxl);
+  padding:4.5rem;position:relative;overflow:hidden;text-align:center;
+  border:1px solid var(--bd);
+}
+.cta-bg1{position:absolute;top:-80px;right:-80px;width:350px;height:350px;border-radius:50%;background:radial-gradient(circle,rgba(181,99,74,.18) 0%,transparent 65%);}
+.cta-bg2{position:absolute;bottom:-60px;left:-60px;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(122,158,135,.1) 0%,transparent 65%);}
+.cta-box .sec-title{color:var(--ink);}
+.cta-box .sec-sub{color:var(--ink3);margin:0 auto 2.5rem;}
+
+/* ═══ FOOTER ═══ */
+footer{
+  border-top:1px solid var(--bd);padding:2rem 4rem;
+  display:flex;align-items:center;justify-content:space-between;
+  font-size:12px;color:var(--ink4);background:var(--cr2);
+}
+.footer-links{display:flex;gap:1.75rem;}
+.footer-links a{color:var(--ink4);text-decoration:none;transition:color .2s;}
+.footer-links a:hover{color:var(--tc);}
+
+/* ═══ BUTTONS ═══ */
+.btn-p{
+  display:inline-flex;align-items:center;gap:8px;
+  background:linear-gradient(135deg,var(--tc),var(--tcd));
+  color:#fff;padding:13px 28px;border-radius:10px;font-size:14px;
+  font-weight:500;text-decoration:none;border:none;cursor:pointer;
+  font-family:'DM Sans',sans-serif;transition:all .2s;
+  box-shadow:0 5px 20px rgba(201,150,74,.25);letter-spacing:.02em;
+}
+.btn-p:hover{transform:translateY(-2px);box-shadow:0 9px 28px rgba(201,150,74,.35);}
+.btn-s{
+  display:inline-flex;align-items:center;gap:8px;background:transparent;
+  color:var(--ink2);padding:13px 22px;border-radius:10px;font-size:14px;
+  border:1px solid rgba(255,255,255,.12);cursor:pointer;text-decoration:none;
+  font-family:'DM Sans',sans-serif;transition:all .2s;letter-spacing:.01em;
+}
+.btn-s:hover{border-color:var(--bdt);color:var(--tcl);background:rgba(201,150,74,.08);}
+.bsm{
+  padding:8px 16px;border-radius:9px;font-size:12px;font-weight:500;
+  cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;letter-spacing:.01em;
+}
+.bsm-outline{background:none;border:1px solid rgba(255,255,255,.1);color:var(--ink2);}
+.bsm-outline:hover{border-color:var(--bdt);color:var(--tcl);}
+.bsm-primary{background:var(--cr3);color:var(--ink);border:1px solid var(--bd);}
+.bsm-primary:hover{background:var(--cr2);border-color:rgba(255,255,255,.15);}
+.bsm-tc{background:linear-gradient(135deg,var(--tc),var(--tcd));color:var(--wh);border:none;box-shadow:0 3px 12px rgba(181,99,74,.22);}
+.bsm-tc:hover{box-shadow:0 5px 18px rgba(181,99,74,.32);transform:translateY(-1px);}
+.bsm-sg{background:var(--sg);color:var(--wh);border:none;}
+.bsm-sg:hover{background:var(--sgd);}
+
+/* ═══ LOGIN ═══ */
+.login-left{
+  flex:1;background:var(--ink);
+  display:flex;flex-direction:column;justify-content:center;
+  padding:5rem;position:relative;overflow:hidden;
+}
+.ll-bg1{position:absolute;top:-100px;left:-100px;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(181,99,74,.18) 0%,transparent 65%);}
+.ll-bg2{position:absolute;bottom:-80px;right:-80px;width:320px;height:320px;border-radius:50%;background:radial-gradient(circle,rgba(122,158,135,.12) 0%,transparent 65%);}
+.ll-pat{position:absolute;inset:0;opacity:.2;background-image:radial-gradient(circle,rgba(181,99,74,.5) 1px,transparent 1px);background-size:26px 26px;}
+.ll-c{position:relative;z-index:1;}
+.ll-logo{display:flex;align-items:center;gap:11px;margin-bottom:4rem;}
+.ll-lm{
+  width:38px;height:38px;background:linear-gradient(135deg,var(--tc),var(--tcd));
+  border-radius:9px;display:flex;align-items:center;justify-content:center;
+  font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--wh);font-weight:600;
+  box-shadow:0 4px 14px rgba(181,99,74,.3);
+}
+.ll-brand{font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--wh);font-weight:600;}
+.ll-tag{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(1.8rem,2.9vw,2.75rem);
+  color:var(--wh);line-height:1.18;margin-bottom:1.4rem;letter-spacing:-.01em;
+}
+.ll-tag em{color:var(--tcl);font-style:italic;}
+.ll-desc{font-size:13px;color:rgba(255,255,255,.38);font-weight:300;line-height:1.8;max-width:380px;margin-bottom:3rem;}
+.ll-feats{display:flex;flex-direction:column;gap:12px;}
+.ll-feat{display:flex;align-items:flex-start;gap:10px;}
+.ll-dot{width:5px;height:5px;border-radius:50%;background:var(--tcl);flex-shrink:0;margin-top:8px;}
+.ll-ft{font-size:13px;color:rgba(255,255,255,.52);font-weight:300;}
+.ll-back{
+  position:absolute;top:2rem;left:2rem;
+  background:none;border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.38);
+  padding:7px 16px;border-radius:7px;font-size:12px;cursor:pointer;
+  font-family:'DM Sans',sans-serif;transition:all .2s;z-index:2;
+}
+.ll-back:hover{border-color:rgba(255,255,255,.28);color:var(--wh);}
+
+.login-right{
+  width:540px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:3.5rem;flex-shrink:0;overflow-y:auto;max-height:100vh;
+  background:var(--cr);border-left:1px solid var(--bd);
+}
+.lbox{width:100%;max-width:420px;}
+.login-tabs{
+  display:flex;border:1px solid var(--bd);border-radius:10px;overflow:hidden;margin-bottom:2.25rem;
+}
+.ltab{
+  flex:1;padding:10px;text-align:center;font-size:13px;font-weight:500;cursor:pointer;
+  background:var(--cr2);color:var(--ink3);transition:all .2s;letter-spacing:.02em;
+}
+.ltab.active{background:linear-gradient(135deg,var(--tc),var(--tcd));color:#fff;}
+.login-title{font-family:'Cormorant Garamond',serif;font-size:1.9rem;font-weight:500;margin-bottom:.35rem;letter-spacing:-.01em;}
+.login-sub{font-size:13px;color:var(--ink3);margin-bottom:2rem;font-weight:300;}
+.lf{margin-bottom:.9rem;}
+.lf label{font-size:11px;font-weight:500;color:var(--ink3);display:block;margin-bottom:5px;letter-spacing:.04em;text-transform:uppercase;}
+.lf input,.lf select{
+  width:100%;padding:11px 13px;border:1px solid var(--bd);border-radius:9px;
+  font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);
+  background:var(--cr2);outline:none;transition:all .2s;
+}
+.lf input:focus,.lf select:focus{border-color:var(--bdt);box-shadow:0 0 0 3px rgba(201,150,74,.1);}
+.lf-row{display:grid;grid-template-columns:1fr 1fr;gap:.875rem;}
+.btn-submit{
+  width:100%;background:linear-gradient(135deg,var(--tc),var(--tcd));
+  color:#fff;border:none;border-radius:10px;padding:13px;font-size:14px;
+  font-weight:500;cursor:pointer;transition:all .2s;margin-bottom:.875rem;
+  font-family:'DM Sans',sans-serif;letter-spacing:.02em;
+  box-shadow:0 5px 20px rgba(201,150,74,.25);
+}
+.btn-submit:hover{transform:translateY(-1px);box-shadow:0 8px 26px rgba(201,150,74,.35);}
+.login-terms{font-size:11px;color:var(--ink4);text-align:center;line-height:1.65;}
+.login-terms a{color:var(--tc);text-decoration:none;}
+.field-err{font-size:11px;color:var(--err);margin-top:3px;display:none;}
+
+/* FOTO PERFIL */
+.foto-upload-area{
+  border:2px dashed var(--bdt);border-radius:14px;padding:1.5rem;
+  text-align:center;cursor:pointer;transition:all .2s;margin-bottom:1rem;
+  background:var(--cr2);
+}
+.foto-upload-area:hover{border-color:var(--tc);background:rgba(201,150,74,.06);}
+.foto-preview{width:76px;height:76px;border-radius:50%;object-fit:cover;border:2.5px solid var(--bdt);margin:0 auto .875rem;display:block;}
+.foto-placeholder{
+  width:76px;height:76px;border-radius:50%;background:var(--cr2);
+  border:2px solid var(--bdt);display:flex;align-items:center;justify-content:center;
+  font-size:30px;margin:0 auto .875rem;
+}
+.foto-label{font-size:12px;color:var(--ink3);font-weight:300;}
+.foto-change{font-size:11px;color:var(--tc);font-weight:500;cursor:pointer;}
+#inp-foto{display:none;}
+
+/* ═══ APP ═══ */
+.app-sidebar{
+  width:240px;background:var(--cr2);border-right:1px solid var(--bd);
+  display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:0;height:100vh;
+}
+.sb-logo{padding:1.5rem 1.375rem 1.1rem;border-bottom:1px solid var(--bd);}
+.sb-lr{display:flex;align-items:center;gap:9px;}
+.sb-lm{
+  width:29px;height:29px;background:linear-gradient(135deg,var(--tc),var(--tcd));
+  border-radius:7px;display:flex;align-items:center;justify-content:center;
+  font-family:'Cormorant Garamond',serif;font-size:14px;color:var(--wh);font-weight:600;
+}
+.sb-lt{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:600;color:var(--ink);}
+.sb-user{
+  padding:1.1rem 1.375rem;border-bottom:1px solid var(--bd);
+  display:flex;align-items:center;gap:11px;
+}
+.sb-av{
+  width:38px;height:38px;border-radius:50%;overflow:hidden;
+  background:linear-gradient(135deg,var(--tcp),var(--tcl));
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Cormorant Garamond',serif;font-size:14px;color:var(--tc);font-weight:500;
+  border:2px solid var(--bdt);flex-shrink:0;
+}
+.sb-av img{width:100%;height:100%;object-fit:cover;}
+.sb-uname{font-size:12px;font-weight:500;color:var(--ink);line-height:1.3;}
+.sb-uesp{font-size:10px;color:var(--ink4);margin-top:2px;}
+.sb-nav{flex:1;padding:.875rem 0;overflow-y:auto;}
+.sb-sec{font-size:10px;font-weight:500;letter-spacing:.09em;text-transform:uppercase;color:var(--ink4);padding:8px 1.375rem 4px;}
+.app-nav{
+  display:flex;align-items:center;gap:9px;padding:9px 1.375rem;
+  cursor:pointer;font-size:13px;color:var(--ink3);font-weight:400;
+  border-left:2.5px solid transparent;transition:all .15s;border-radius:0 8px 8px 0;margin-right:.5rem;
+}
+.app-nav:hover{background:var(--cr3);color:var(--ink);}
+.app-nav.active{background:rgba(201,150,74,.12);color:var(--tcl);border-left-color:var(--tc);font-weight:500;}
+.nav-ic{font-size:15px;width:18px;text-align:center;}
+.sb-bottom{padding:1.1rem 1.375rem;border-top:1px solid var(--bd);display:flex;flex-direction:column;gap:7px;}
+.btn-perfil{
+  width:100%;background:none;border:1px solid var(--bdt);border-radius:8px;
+  padding:8px;font-size:11px;color:var(--tcl);cursor:pointer;
+  font-family:'DM Sans',sans-serif;transition:all .2s;
+}
+.btn-perfil:hover{background:rgba(201,150,74,.1);}
+.btn-logout{
+  width:100%;background:none;border:1px solid var(--bd);border-radius:8px;
+  padding:8px;font-size:11px;color:var(--ink3);cursor:pointer;
+  font-family:'DM Sans',sans-serif;transition:all .2s;
+}
+.btn-logout:hover{border-color:var(--err);color:var(--err);}
+
+.app-main{flex:1;display:flex;flex-direction:column;min-width:0;background:var(--cr);}
+.app-topbar{
+  background:var(--cr2);border-bottom:1px solid var(--bd);
+  padding:1.1rem 2rem;display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:10;
+}
+.tb-title{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:500;letter-spacing:-.01em;}
+.tb-actions{display:flex;gap:9px;align-items:center;}
+.app-content{flex:1;padding:2rem;overflow-y:auto;}
+
+/* FORM CARDS */
+.acard{background:var(--cr2);border:1px solid var(--bd);border-radius:var(--rl);padding:1.625rem;}
+.acard-title{font-size:10px;font-weight:500;letter-spacing:.09em;text-transform:uppercase;color:var(--ink4);margin-bottom:1.375rem;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;}
+.ff{margin-bottom:.9rem;}
+.ff label{font-size:11px;font-weight:500;color:var(--ink3);display:block;margin-bottom:5px;letter-spacing:.03em;}
+.ff input,.ff select,.ff textarea{
+  width:100%;padding:9px 12px;border:1px solid var(--bd);border-radius:9px;
+  font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);
+  background:var(--cr3);outline:none;transition:all .2s;
+}
+.ff input:focus,.ff select:focus,.ff textarea:focus{border-color:var(--bdt);box-shadow:0 0 0 3px rgba(201,150,74,.08);background:var(--cr2);}
+.ff textarea{min-height:76px;resize:vertical;}
+
+/* ITEMS TABLE */
+.itbl{width:100%;border-collapse:collapse;font-size:13px;}
+.itbl th{text-align:left;padding:8px 10px;font-size:10px;font-weight:500;color:var(--ink4);border-bottom:1px solid var(--bd);text-transform:uppercase;letter-spacing:.05em;}
+.itbl td{padding:7px 10px;border-bottom:1px solid var(--bd);}
+.itbl td input,.itbl td select{border:none;background:transparent;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);width:100%;outline:none;padding:2px 0;}
+.itbl td input:focus,.itbl td select:focus{background:rgba(201,150,74,.1);border-radius:4px;padding:2px 6px;}
+.itbl td.r{text-align:right;font-weight:500;}
+.del-btn{background:none;border:none;cursor:pointer;color:var(--ink4);font-size:13px;padding:3px 8px;border-radius:5px;transition:all .15s;}
+.del-btn:hover{background:rgba(181,74,74,.08);color:var(--err);}
+.totals-box{margin-top:1.5rem;padding-top:1.125rem;border-top:1px solid var(--bd);display:flex;flex-direction:column;align-items:flex-end;gap:6px;}
+.trow{display:flex;justify-content:space-between;font-size:13px;min-width:280px;gap:2rem;}
+.trow span:first-child{color:var(--ink3);}
+.trow.grand{font-family:'Cormorant Garamond',serif;font-size:1.15rem;border-top:1px solid var(--bd);padding-top:9px;margin-top:5px;}
+
+/* AI */
+.ai-wrap{background:rgba(201,150,74,.05);border:1px solid var(--bdt);border-radius:var(--r);padding:1.375rem;margin-top:1rem;}
+.ai-hdr{display:flex;align-items:center;gap:9px;margin-bottom:1rem;}
+.ai-ttl{font-size:12px;font-weight:500;color:var(--tcl);letter-spacing:.03em;}
+.ai-sp{width:13px;height:13px;border:2px solid var(--bdt);border-top-color:var(--tc);border-radius:50%;animation:spin .7s linear infinite;display:none;}
+.ai-ctx{width:100%;padding:9px 12px;border:1px solid var(--bdt);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:13px;background:var(--cr3);color:var(--ink);margin-bottom:.875rem;outline:none;}
+.ai-ctx:focus{border-color:var(--tc);}
+.ai-sug{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:11px 13px;background:var(--cr3);border:1px solid var(--bd);
+  border-radius:9px;margin-bottom:7px;cursor:pointer;transition:all .15s;
+}
+.ai-sug:hover{border-color:var(--bdt);background:rgba(201,150,74,.08);}
+.ai-sug.used{opacity:.4;pointer-events:none;}
+.ai-si{flex:1;}
+.ai-sd{font-size:13px;color:var(--ink);}
+.ai-sm{font-size:11px;color:var(--ink4);margin-top:2px;}
+.ai-sp2{font-size:13px;font-weight:500;color:var(--ink);white-space:nowrap;}
+.ai-add{background:rgba(201,150,74,.15);border:1px solid var(--bdt);color:var(--tcl);border-radius:6px;padding:3px 11px;font-size:11px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;}
+.ai-add:hover{background:var(--tc);color:#fff;border-color:var(--tc);}
+
+/* TABLES */
+.dtbl{width:100%;border-collapse:collapse;font-size:13px;}
+.dtbl th{text-align:left;padding:9px 12px;font-size:10px;font-weight:500;color:var(--ink4);border-bottom:1px solid var(--bd);text-transform:uppercase;letter-spacing:.05em;}
+.dtbl td{padding:11px 12px;border-bottom:1px solid var(--bd);color:var(--ink);}
+.dtbl tr:hover td{background:var(--cr3);}
+.dtbl tr:last-child td{border-bottom:none;}
+.badge{display:inline-block;padding:2px 9px;border-radius:5px;font-size:10px;font-weight:500;}
+.badge-ok{background:rgba(91,173,114,.12);color:var(--ok);}
+.badge-pend{background:rgba(212,151,58,.12);color:var(--warn);}
+.badge-info{background:rgba(201,150,74,.12);color:var(--tcl);}
+.badge-sg{background:var(--sgp);color:var(--sg);}
+.btn-tbl{
+  background:none;border:1px solid var(--bd);border-radius:6px;
+  padding:4px 10px;font-size:11px;cursor:pointer;color:var(--ink3);
+  transition:all .15s;font-family:'DM Sans',sans-serif;
+}
+.btn-tbl:hover{border-color:var(--tc);color:var(--tc);}
+
+/* DASHBOARD STATS */
+.dash-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1.125rem;margin-bottom:1.625rem;}
+.dstat{background:var(--cr2);border:1px solid var(--bd);border-radius:var(--rl);padding:1.375rem;position:relative;overflow:hidden;}
+.dstat::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--tc),var(--tcl));opacity:.3;}
+.dstat-l{font-size:10px;color:var(--ink4);margin-bottom:6px;font-weight:500;letter-spacing:.05em;text-transform:uppercase;}
+.dstat-v{font-family:'Cormorant Garamond',serif;font-size:1.875rem;font-weight:500;color:var(--ink);}
+.dstat-v.t{color:var(--tc);}
+.dstat-s{font-size:11px;color:var(--ok);margin-top:3px;}
+
+/* PERFIL MODAL */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;display:none;align-items:center;justify-content:center;backdrop-filter:blur(12px);}
+.overlay.open{display:flex;animation:fadeIn .2s ease;}
+.modal{background:var(--cr2);border:1px solid var(--bd);border-radius:var(--rl);width:700px;max-height:93vh;overflow-y:auto;position:relative;box-shadow:var(--shx);animation:fadeUp .25s ease;}
+.modal-hdr{padding:1.625rem 2rem 1.1rem;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center;}
+.modal-title{font-family:'Cormorant Garamond',serif;font-size:1.45rem;font-weight:500;}
+.modal-close{background:var(--cr3);border:none;border-radius:50%;width:31px;height:31px;cursor:pointer;font-size:14px;color:var(--ink3);display:flex;align-items:center;justify-content:center;transition:background .2s;}
+.modal-close:hover{background:rgba(255,255,255,.08);color:var(--ink);}
+.modal-body{padding:1.625rem 2rem;}
+.modal-footer{padding:1rem 2rem 1.625rem;border-top:1px solid var(--bd);display:flex;justify-content:flex-end;gap:9px;}
+
+/* PERFIL FOTO */
+.perfil-photo-row{display:flex;align-items:center;gap:1.25rem;margin-bottom:1.5rem;padding-bottom:1.5rem;border-bottom:1px solid var(--bd);}
+.perfil-photo-lg{
+  width:70px;height:70px;border-radius:50%;background:linear-gradient(135deg,var(--tcp),var(--tcl));
+  display:flex;align-items:center;justify-content:center;font-size:18px;
+  border:2.5px solid var(--bdt);flex-shrink:0;overflow:hidden;
+}
+
+/* PDF DOC */
+#pdf-doc{padding:2.5rem;background:#ffffff;color:#1A1713;}
+.pdf-hdr{display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:1.625rem;border-bottom:2px solid #1A1713;margin-bottom:1.625rem;}
+.pdf-co-logo{display:flex;align-items:center;gap:9px;margin-bottom:.3rem;}
+.pdf-lm{width:27px;height:27px;background:linear-gradient(135deg,#C9964A,#A87838);border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:13px;color:#fff;font-weight:600;}
+.pdf-co-name{font-family:'Cormorant Garamond',serif;font-size:1.55rem;font-weight:600;color:#1A1713;}
+.pdf-co-det{font-size:11px;color:#7A6F63;margin-top:4px;line-height:1.65;}
+.pdf-type{font-family:'Cormorant Garamond',serif;font-size:2rem;color:#C9964A;text-align:right;font-weight:500;}
+.pdf-num{font-size:12px;color:#7A6F63;text-align:right;margin-top:2px;}
+.pdf-meta{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem;padding:1.125rem;background:#F4EFE7;border-radius:10px;}
+.pdf-mb label{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:#ADA398;display:block;margin-bottom:5px;}
+.pv{font-size:14px;font-weight:500;margin-bottom:2px;color:#1A1713;}
+.ps{font-size:12px;color:#7A6F63;margin-top:1px;}
+.pdf-tbl{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:1rem;}
+.pdf-tbl th{padding:8px 10px;border-bottom:1.5px solid #1A1713;font-size:10px;color:#ADA398;text-transform:uppercase;letter-spacing:.06em;text-align:left;}
+.pdf-tbl td{padding:8px 10px;border-bottom:1px solid rgba(26,23,19,.09);color:#1A1713;}
+.pdf-totals{display:flex;flex-direction:column;align-items:flex-end;gap:5px;padding:1rem 1.25rem;background:#F4EFE7;border-radius:8px;}
+.pdf-tr{display:flex;min-width:240px;justify-content:space-between;font-size:12px;gap:2rem;}
+.pdf-tr span:first-child{color:#7A6F63;}
+.pdf-grand{font-weight:600;font-size:14px;border-top:1px solid rgba(26,23,19,.09);padding-top:7px;margin-top:3px;}
+.pdf-foot{font-size:11px;color:#7A6F63;margin-top:1rem;padding-top:1rem;border-top:1px solid rgba(26,23,19,.09);line-height:1.7;}
+
+/* COSEGURO */
+.coseguro-pill{
+  display:none;background:var(--sgp);color:var(--sg);border:1px solid var(--bds);
+  border-radius:20px;padding:5px 13px;font-size:12px;font-weight:500;
+}
+
+/* NOTIF */
+.notif{
+  position:fixed;bottom:1.75rem;left:50%;transform:translateX(-50%) translateY(120%);
+  background:var(--cr3);color:var(--ink);padding:11px 22px;border-radius:40px;
+  display:flex;align-items:center;gap:9px;font-size:13px;z-index:999;
+  box-shadow:0 8px 32px rgba(0,0,0,.5);transition:transform .35s cubic-bezier(.3,.7,.3,1.3);
+  white-space:nowrap;border:1px solid var(--bd);
+}
+.notif.on{transform:translateX(-50%) translateY(0);}
+.notif.err{background:var(--err);color:#fff;border-color:transparent;}
+.ndot{width:6px;height:6px;border-radius:50%;background:var(--tcl);flex-shrink:0;}
+.ndot.red{background:rgba(255,255,255,.5);}
+
+/* PICKER PACIENTES */
+.pac-item{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:.875rem 1rem;border:1px solid var(--bd);border-radius:10px;
+  margin-bottom:.5rem;cursor:pointer;transition:all .15s;
+  background:var(--cr3);
+}
+.pac-item:hover{border-color:var(--bdt);background:rgba(201,150,74,.08);}
+.pac-item-name{font-size:13px;font-weight:500;}
+.pac-item-det{font-size:11px;color:var(--ink3);margin-top:2px;}
+
+/* SEARCH */
+.search-wrap{position:relative;display:inline-block;}
+.search-wrap input{padding-left:32px;}
+.search-ic{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--ink4);}
+
+/* SEC ANCHOR */
+.sec-anchor{display:block;height:0;pointer-events:none;}
+
+/* RESPONSIVE TOUCH */
+@media (max-width:1100px){
+  .hero-visual{display:none;}
+  nav{padding:1rem 2rem;}
+  .hero{padding:7rem 2rem 4rem;}
+  .section,.how-section{padding:5rem 2rem;}
+  .spec-section{padding:5rem 2rem;}
+  .spec-inner{grid-template-columns:1fr;}
+  .feat-grid{grid-template-columns:1fr 1fr;}
+  .steps{grid-template-columns:1fr 1fr;}
+  .steps::before{display:none;}
+  .testimonials-grid{grid-template-columns:1fr 1fr;}
+  footer{padding:1.5rem 2rem;}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════
+     LANDING PAGE
+════════════════════════════════════════════ -->
+<div id="page-landing" class="page active">
+
+<nav>
+  <div class="nav-logo" onclick="gotoLanding()">
+    <div class="nav-lm">S</div>
+    <span class="nav-brand">SanaMente</span>
+  </div>
+  <div class="nav-links">
+    <a onclick="landingScrollTo('funciones')">Funcionalidades</a>
+    <a onclick="landingScrollTo('especialidades')">Especialidades</a>
+    <a onclick="landingScrollTo('como-funciona')">Cómo funciona</a>
+    <a onclick="landingScrollTo('opiniones')">Opiniones</a>
+    <a class="btn-nav" onclick="gotoLogin()">Ingresar →</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-pat"></div>
+  <div class="hero-content">
+    <div class="hero-badge">
+      <div class="hero-dot"></div>
+      Plataforma especializada en salud mental
+    </div>
+    <h1>Facturación pensada para <em>psicopedagogas</em></h1>
+    <p>Generá comprobantes profesionales en minutos. IA especializada en nomenclatura psicopedagógica, gestión de pacientes, obras sociales y PDF descargable listo para enviar.</p>
+    <div class="hero-actions">
+      <button class="btn-p" onclick="gotoLogin('registro')">Crear cuenta gratuita →</button>
+      <button class="btn-s" onclick="landingScrollTo('como-funciona')">Ver cómo funciona</button>
+    </div>
+    <div class="hero-trust">
+      <div class="hero-avatars">
+        <div class="hero-av">ML</div>
+        <div class="hero-av" style="background:var(--sg);">CF</div>
+        <div class="hero-av" style="background:var(--ink2);">PA</div>
+        <div class="hero-av" style="background:var(--tcd);">SV</div>
+      </div>
+      <div>
+        <div style="display:flex;align-items:center;gap:4px;">
+          <div class="hero-trust-stars">★★★★★</div>
+          <span style="font-size:13px;font-weight:500;">4.9</span>
+        </div>
+        <div class="hero-trust-txt">+620 profesionales de salud ya lo usan</div>
+      </div>
+    </div>
+  </div>
+  <div class="hero-visual">
+    <div class="hcard">
+      <div class="hc-lbl">Comprobante emitido</div>
+      <div class="hc-name">Lucía Martínez</div>
+      <div class="hc-sub">Niña · 7 años · OSDE</div>
+      <div class="hc-badge">Sesión autorizada</div>
+      <div class="hc-amount">$ 18.500</div>
+      <div class="hc-items">
+        <div class="hc-item"><span>Evaluación inicial (60 min)</span><span>$15.000</span></div>
+        <div class="hc-item"><span>Informe psicopedagógico</span><span>$3.500</span></div>
+        <div class="hc-item"><span>Total (IVA exento · salud)</span><span>$18.500</span></div>
+      </div>
+    </div>
+    <div class="hc-ai">
+      <div class="hc-ai-ic">✦</div>
+      <div class="hc-ai-txt">IA sugirió los ítems según el tipo de paciente y cobertura automáticamente</div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats-bar">
+  <div class="stat"><div class="stat-n">4.800+</div><div class="stat-l">Sesiones facturadas</div></div>
+  <div class="stat-div"></div>
+  <div class="stat"><div class="stat-n">620+</div><div class="stat-l">Profesionales de salud</div></div>
+  <div class="stat-div"></div>
+  <div class="stat"><div class="stat-n">98%</div><div class="stat-l">Satisfacción</div></div>
+  <div class="stat-div"></div>
+  <div class="stat"><div class="stat-n">∞</div><div class="stat-l">Comprobantes incluidos</div></div>
+</div>
+
+<!-- FEATURES -->
+<span class="sec-anchor" id="funciones"></span>
+<div class="section">
+  <div class="sec-eye">Funcionalidades</div>
+  <h2 class="sec-title">Todo lo que necesitás para<br>gestionar tu consulta</h2>
+  <p class="sec-sub">Pensado para psicopedagogas que trabajan solas o en equipo, con pacientes de todas las edades.</p>
+  <div class="feat-wrap">
+    <div class="feat-grid">
+      <div class="feat">
+        <div class="feat-ic t">🧠</div>
+        <div class="feat-title">IA especializada en salud</div>
+        <p class="feat-desc">El asistente conoce la nomenclatura psicopedagógica: evaluaciones, intervenciones, informes, talleres. Sugiere ítems con precios actualizados según el tipo de paciente y cobertura.</p>
+      </div>
+      <div class="feat">
+        <div class="feat-ic s">📄</div>
+        <div class="feat-title">PDF profesional al instante</div>
+        <p class="feat-desc">Generás el comprobante listo para enviar. Diseño limpio con tus datos, obra social del paciente y totales calculados automáticamente.</p>
+      </div>
+      <div class="feat">
+        <div class="feat-ic t">👶🧑</div>
+        <div class="feat-title">Niños y adultos</div>
+        <p class="feat-desc">Distinción por edad, cobertura (PAMI, OSDE, Galeno, particular) y modalidad. Historial completo por paciente sin límites.</p>
+      </div>
+      <div class="feat">
+        <div class="feat-ic s">🏥</div>
+        <div class="feat-title">Obras sociales y coseguro</div>
+        <p class="feat-desc">Registrás la cobertura de cada paciente. El sistema calcula el coseguro automáticamente según la obra social configurada.</p>
+      </div>
+      <div class="feat">
+        <div class="feat-ic t">💳</div>
+        <div class="feat-title">Cobro automatizado</div>
+        <p class="feat-desc">La IA detecta el monto según el tipo de sesión, cobertura y tu arancel. Registra si fue cobrado, pendiente o derivado a obra social.</p>
+      </div>
+      <div class="feat">
+        <div class="feat-ic s">📊</div>
+        <div class="feat-title">Dashboard completo</div>
+        <p class="feat-desc">Total facturado, sesiones del mes, pacientes activos, cobros pendientes. Todo en un vistazo para tomar decisiones rápidas.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SPECIALTIES -->
+<span class="sec-anchor" id="especialidades"></span>
+<div class="spec-section">
+  <div class="spec-inner">
+    <div>
+      <div class="sec-eye">Especialidades</div>
+      <h2 class="sec-title">Diseñado para cada área de la psicopedagogía</h2>
+      <p class="sec-sub">Consultorio privado, institución de salud o escuela — SanaMente se adapta a tu práctica clínica.</p>
+      <div style="margin-top:2rem;">
+        <button class="btn-p" onclick="gotoLogin('registro')">Crear cuenta gratuita →</button>
+      </div>
+    </div>
+    <div>
+      <div class="spec-grid">
+        <div class="spec-card">
+          <div class="spec-em">🧩</div>
+          <div class="spec-name">Dificultades de aprendizaje</div>
+          <p class="spec-desc">Dislexia, discalculia, disgrafía · Evaluación y tratamiento</p>
+        </div>
+        <div class="spec-card">
+          <div class="spec-em">🎯</div>
+          <div class="spec-name">Atención y conducta</div>
+          <p class="spec-desc">TDA/H · Intervención escolar y clínica · Adultos y niños</p>
+        </div>
+        <div class="spec-card">
+          <div class="spec-em">📚</div>
+          <div class="spec-name">Acompañamiento escolar</div>
+          <p class="spec-desc">Apoyo pedagógico, orientación vocacional, trayectorias</p>
+        </div>
+        <div class="spec-card">
+          <div class="spec-em">🧓</div>
+          <div class="spec-name">Adultos mayores</div>
+          <p class="spec-desc">Estimulación cognitiva, diagnóstico neuropsicológico, PAMI</p>
+        </div>
+        <div class="spec-card">
+          <div class="spec-em">🌿</div>
+          <div class="spec-name">Salud mental y neuro</div>
+          <p class="spec-desc">Trabajo interdisciplinario con psicología, fonoaudiología</p>
+        </div>
+        <div class="spec-card">
+          <div class="spec-em">🏫</div>
+          <div class="spec-name">Institucional</div>
+          <p class="spec-desc">Colegios, hospitales, centros de salud · Por institución</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<span class="sec-anchor" id="como-funciona"></span>
+<div class="how-section">
+  <div style="text-align:center;">
+    <div class="sec-eye" style="text-align:center;">Cómo funciona</div>
+    <h2 class="sec-title" style="text-align:center;">En 4 pasos, tu factura lista</h2>
+    <p class="sec-sub" style="margin:0 auto;text-align:center;">Sin complicaciones, sin errores. Así es una consulta típica en SanaMente.</p>
+  </div>
+  <div class="steps">
+    <div class="step">
+      <div class="step-n">1</div>
+      <div class="step-title">Creás tu perfil</div>
+      <p class="step-desc">Nombre, matrícula, CUIT, foto y datos del consultorio. Una sola vez.</p>
+    </div>
+    <div class="step">
+      <div class="step-n">2</div>
+      <div class="step-title">Cargás el paciente</div>
+      <p class="step-desc">Nombre, edad, obra social, número de afiliado. Queda guardado para futuras consultas.</p>
+    </div>
+    <div class="step">
+      <div class="step-n">3</div>
+      <div class="step-title">La IA sugiere ítems</div>
+      <p class="step-desc">Escribís el tipo de sesión y la IA completa los ítems con nomenclatura formal y precios actualizados.</p>
+    </div>
+    <div class="step">
+      <div class="step-n">4</div>
+      <div class="step-title">Exportás el PDF</div>
+      <p class="step-desc">Comprobante profesional listo para enviar por WhatsApp, email o imprimir.</p>
+    </div>
+  </div>
+</div>
+
+<!-- DEMO SECTION (en lugar de precios) -->
+<div class="demo-section">
+  <div class="demo-inner">
+    <div>
+      <div class="sec-eye" style="color:var(--tcl);">Ejemplo real de uso</div>
+      <h2 class="sec-title" style="color:var(--ink);">Así se ve una sesión registrada en la plataforma</h2>
+      <p class="sec-sub" style="color:var(--ink3);margin-bottom:2rem;">Una psicopedagoga carga una evaluación inicial de una niña con OSDE. La IA sugiere los ítems, calcula el coseguro y genera el PDF en segundos.</p>
+      <div style="display:flex;flex-direction:column;gap:.875rem;">
+        <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--ink3);">
+          <span style="width:6px;height:6px;border-radius:50%;background:var(--tcl);display:inline-block;flex-shrink:0;"></span>
+          La IA detectó "evaluación inicial · niña · OSDE" y pre-completó los ítems
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--ink3);">
+          <span style="width:6px;height:6px;border-radius:50%;background:var(--tcl);display:inline-block;flex-shrink:0;"></span>
+          El coseguro OSDE (20%) se calculó automáticamente
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--ink3);">
+          <span style="width:6px;height:6px;border-radius:50%;background:var(--tcl);display:inline-block;flex-shrink:0;"></span>
+          El PDF se generó con todos los datos profesionales y del paciente
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--ink3);">
+          <span style="width:6px;height:6px;border-radius:50%;background:var(--tcl);display:inline-block;flex-shrink:0;"></span>
+          Tiempo total: menos de 3 minutos desde el inicio
+        </div>
+      </div>
+      <div style="margin-top:2.5rem;">
+        <button class="btn-p" onclick="gotoLogin('registro')">Probarlo ahora →</button>
+      </div>
+    </div>
+    <div class="demo-screen">
+      <div class="demo-bar">
+        <div class="demo-dot" style="background:#FF5F57;"></div>
+        <div class="demo-dot" style="background:#FEBC2E;"></div>
+        <div class="demo-dot" style="background:#28C840;"></div>
+        <span style="font-size:11px;color:rgba(255,255,255,.25);margin-left:8px;">SanaMente · Nueva factura</span>
+      </div>
+      <div class="demo-body">
+        <div class="demo-label">Paciente cargado</div>
+        <div class="demo-patient">
+          <div class="demo-pname">Lucía M. · Niña 7 años</div>
+          <div class="demo-psub">OSDE · Afiliada N° 987654321-00 · Tutora: Ana Martínez</div>
+        </div>
+        <div class="demo-label">Ítems sugeridos por IA ✦</div>
+        <div class="demo-row"><span>Evaluación psicopedagógica inicial (60 min)</span><span style="color:var(--tcl);">$18.500</span></div>
+        <div class="demo-row"><span>Informe psicopedagógico escrito</span><span style="color:var(--tcl);">$15.000</span></div>
+        <div class="demo-row"><span>Devolución diagnóstica</span><span style="color:var(--tcl);">$10.500</span></div>
+        <div class="demo-row"><span>Total · IVA exento (salud)</span><span>$44.000</span></div>
+        <div style="margin-top:1rem;background:rgba(122,158,135,.12);border-radius:8px;padding:.75rem;font-size:12px;color:rgba(255,255,255,.45);">
+          Coseguro OSDE 20%: $8.800 · Resta a cobrar: $35.200
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TESTIMONIALS -->
+<span class="sec-anchor" id="opiniones"></span>
+<div class="testimonials-section">
+  <div class="testimonials-inner">
+    <div style="text-align:center;">
+      <div class="sec-eye" style="text-align:center;">Opiniones reales</div>
+      <h2 class="sec-title" style="text-align:center;">Lo que dicen las profesionales<br>que ya lo usan</h2>
+      <p class="sec-sub" style="margin:0 auto;text-align:center;">Calificaciones y comentarios de psicopedagogas, fonoaudiólogas y terapistas que usan SanaMente en su práctica diaria.</p>
+    </div>
+
+    <div class="testimonials-grid" id="reviews-grid">
+      <!-- Se renderizan dinámicamente -->
+    </div>
+
+    <!-- AGREGAR COMENTARIO -->
+    <div class="add-review-card" id="add-review-section">
+      <div class="add-review-title">Compartí tu experiencia</div>
+      <div class="add-review-sub">Tu opinión ayuda a otras profesionales a conocer SanaMente. Todos los comentarios son bienvenidos.</div>
+      <div class="review-form">
+        <div class="rf-field">
+          <label>Tu nombre</label>
+          <input type="text" id="rev-nombre" placeholder="Lic. María García">
+        </div>
+        <div class="rf-field">
+          <label>Especialidad</label>
+          <select id="rev-esp">
+            <option>Lic. en Psicopedagogía</option>
+            <option>Prof. en Psicopedagogía</option>
+            <option>Lic. en Fonoaudiología</option>
+            <option>Lic. en Psicología</option>
+            <option>Lic. en Terapia Ocupacional</option>
+            <option>Otro</option>
+          </select>
+        </div>
+        <div class="rf-field">
+          <label>Calificación</label>
+          <div class="star-rating" id="star-rating">
+            <button class="star-btn" data-v="1" onclick="setStars(1)">★</button>
+            <button class="star-btn" data-v="2" onclick="setStars(2)">★</button>
+            <button class="star-btn" data-v="3" onclick="setStars(3)">★</button>
+            <button class="star-btn" data-v="4" onclick="setStars(4)">★</button>
+            <button class="star-btn" data-v="5" onclick="setStars(5)">★</button>
+          </div>
+        </div>
+        <div class="rf-field rf-comment">
+          <label>Tu opinión</label>
+          <textarea id="rev-texto" placeholder="Contá cómo usás SanaMente en tu práctica diaria, qué te pareció la plataforma..."></textarea>
+        </div>
+        <div class="rf-actions">
+          <button class="btn-p" onclick="publicarReview()" style="padding:11px 24px;font-size:13px;">Publicar comentario →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CTA -->
+<div class="cta-section">
+  <div class="cta-box">
+    <div class="cta-bg1"></div>
+    <div class="cta-bg2"></div>
+    <div style="position:relative;z-index:1;">
+      <div class="sec-eye" style="color:var(--tcl);text-align:center;">Empezá hoy</div>
+      <h2 class="sec-title" style="text-align:center;">Tu primera factura en menos de 3 minutos</h2>
+      <p class="sec-sub" style="margin:0 auto 2.5rem;text-align:center;">Sin tarjeta de crédito. Sin complicaciones. Solo creás tu cuenta y empezás.</p>
+      <button class="btn-p" onclick="gotoLogin('registro')" style="font-size:15px;padding:14px 32px;">Crear mi cuenta gratis →</button>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div style="display:flex;align-items:center;gap:11px;">
+    <div style="width:26px;height:26px;background:linear-gradient(135deg,var(--tc),var(--tcd));border-radius:5px;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:13px;color:var(--wh);font-weight:600;">S</div>
+    <span style="font-family:'Cormorant Garamond',serif;font-size:16px;color:var(--ink);">SanaMente</span>
+    <span>· Facturación para la salud</span>
+  </div>
+  <div class="footer-links">
+    <a href="#">Términos</a>
+    <a href="#">Privacidad</a>
+    <a href="#">Contacto</a>
+  </div>
+  <span>© 2025 SanaMente · Hecho en Argentina 🇦🇷</span>
+</footer>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     LOGIN / REGISTRO
+════════════════════════════════════════════ -->
+<div id="page-login" class="page">
+  <div class="login-left">
+    <div class="ll-bg1"></div><div class="ll-bg2"></div><div class="ll-pat"></div>
+    <button class="ll-back" onclick="gotoLanding()">← Volver</button>
+    <div class="ll-c">
+      <div class="ll-logo">
+        <div class="ll-lm">S</div>
+        <span class="ll-brand">SanaMente</span>
+      </div>
+      <div class="ll-tag">Tu consulta, tu tiempo,<br>tu <em>tranquilidad</em>.</div>
+      <p class="ll-desc">Facturación pensada para profesionales de la salud que quieren cobrar bien, sin perder tiempo en papeles.</p>
+      <div class="ll-feats">
+        <div class="ll-feat"><div class="ll-dot"></div><div class="ll-ft">Perfil profesional con foto, matrícula y CUIT</div></div>
+        <div class="ll-feat"><div class="ll-dot"></div><div class="ll-ft">IA especializada en nomenclatura psicopedagógica</div></div>
+        <div class="ll-feat"><div class="ll-dot"></div><div class="ll-ft">Pacientes niños y adultos con obra social</div></div>
+        <div class="ll-feat"><div class="ll-dot"></div><div class="ll-ft">PDF profesional descargable con tus datos reales</div></div>
+        <div class="ll-feat"><div class="ll-dot"></div><div class="ll-ft">Todos tus datos guardados y persistentes</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="login-right">
+    <div class="lbox">
+      <div class="login-tabs">
+        <div class="ltab active" id="tab-ingreso" onclick="switchTab('ingreso')">Iniciar sesión</div>
+        <div class="ltab" id="tab-registro" onclick="switchTab('registro')">Crear cuenta</div>
+      </div>
+
+      <!-- INGRESO -->
+      <div id="form-ingreso">
+        <div class="login-title">Bienvenida de vuelta</div>
+        <p class="login-sub">Ingresá con tu email y contraseña</p>
+        <div class="lf"><label>Email profesional</label><input type="email" id="i-email" placeholder="tu@email.com"></div>
+        <div class="lf"><label>Contraseña</label><input type="password" id="i-pass" placeholder="••••••••"></div>
+        <div id="i-err" style="font-size:12px;color:var(--err);margin-bottom:.875rem;display:none;"></div>
+        <button class="btn-submit" onclick="doLogin()">Ingresar →</button>
+        <p class="login-terms">¿No tenés cuenta? <a onclick="switchTab('registro')" style="cursor:pointer;">Registrate acá</a></p>
+      </div>
+
+      <!-- REGISTRO -->
+      <div id="form-registro" style="display:none;">
+        <div class="login-title">Crear tu cuenta</div>
+        <p class="login-sub">Completá tu perfil profesional — se usará en todas tus facturas</p>
+
+        <div class="foto-upload-area" onclick="document.getElementById('inp-foto').click()">
+          <div id="foto-placeholder" class="foto-placeholder">👤</div>
+          <img id="foto-preview" class="foto-preview" style="display:none;" alt="preview">
+          <div class="foto-label">Subir foto de perfil (opcional)</div>
+          <div class="foto-change">Hacer clic para elegir</div>
+        </div>
+        <input type="file" id="inp-foto" accept="image/*" onchange="handleFoto(this)">
+
+        <div class="lf-row">
+          <div class="lf"><label>Nombre</label><input type="text" id="r-nombre" placeholder="María"></div>
+          <div class="lf"><label>Apellido</label><input type="text" id="r-apellido" placeholder="García"></div>
+        </div>
+        <div class="lf">
+          <label>Título / Licenciatura</label>
+          <select id="r-titulo">
+            <option>Lic. en Psicopedagogía</option>
+            <option>Prof. en Psicopedagogía</option>
+            <option>Lic. en Fonoaudiología</option>
+            <option>Lic. en Psicología</option>
+            <option>Lic. en Terapia Ocupacional</option>
+            <option>Otro</option>
+          </select>
+        </div>
+        <div class="lf-row">
+          <div class="lf"><label>Matrícula nacional (M.N.)</label><input type="text" id="r-mat" placeholder="12345"></div>
+          <div class="lf"><label>Matrícula provincial</label><input type="text" id="r-matp" placeholder="67890"></div>
+        </div>
+        <div class="lf-row">
+          <div class="lf"><label>CUIT</label><input type="text" id="r-cuit" placeholder="27-12345678-9"></div>
+          <div class="lf">
+            <label>Condición IVA</label>
+            <select id="r-iva">
+              <option>Monotributista</option>
+              <option>Responsable Inscripto</option>
+              <option>Exento</option>
+            </select>
+          </div>
+        </div>
+        <div class="lf"><label>Dirección del consultorio</label><input type="text" id="r-dir" placeholder="Av. Callao 1234 Piso 3°, CABA"></div>
+        <div class="lf"><label>Teléfono / WhatsApp</label><input type="text" id="r-tel" placeholder="+54 11 4567-8901"></div>
+        <div class="lf"><label>Email profesional</label><input type="email" id="r-email" placeholder="lic.garcia@consulta.com"></div>
+        <div class="lf"><label>Contraseña</label><input type="password" id="r-pass" placeholder="Mínimo 6 caracteres"></div>
+        <div id="r-err" style="font-size:12px;color:var(--err);margin-bottom:.875rem;display:none;"></div>
+        <button class="btn-submit" onclick="doRegistro()">Crear mi perfil y entrar →</button>
+        <p class="login-terms">Al registrarte aceptás los <a href="#">Términos</a> y la <a href="#">Política de privacidad</a>.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     APP
+════════════════════════════════════════════ -->
+<div id="page-app" class="page">
+  <div class="app-sidebar">
+    <div class="sb-logo">
+      <div class="sb-lr">
+        <div class="sb-lm">S</div>
+        <span class="sb-lt">SanaMente</span>
+      </div>
+    </div>
+    <div class="sb-user">
+      <div class="sb-av" id="sb-av"><span id="sb-av-txt">?</span></div>
+      <div>
+        <div class="sb-uname" id="sb-uname">—</div>
+        <div class="sb-uesp" id="sb-uesp">—</div>
+      </div>
+    </div>
+    <div class="sb-nav">
+      <div class="sb-sec">Facturación</div>
+      <div class="app-nav active" onclick="showView('nueva')"><span class="nav-ic">✦</span>Nueva factura</div>
+      <div class="app-nav" onclick="showView('dashboard')"><span class="nav-ic">◈</span>Dashboard</div>
+      <div class="app-nav" onclick="showView('facturas')"><span class="nav-ic">≡</span>Comprobantes</div>
+      <div class="sb-sec" style="margin-top:8px;">Gestión</div>
+      <div class="app-nav" onclick="showView('pacientes')"><span class="nav-ic">👤</span>Pacientes</div>
+      <div class="app-nav" onclick="showView('sesiones')"><span class="nav-ic">📋</span>Sesiones</div>
+      <div class="app-nav" onclick="showView('aranceles')"><span class="nav-ic">▣</span>Aranceles</div>
+    </div>
+    <div class="sb-bottom">
+      <button class="btn-perfil" onclick="openPerfil()">✎ Editar perfil</button>
+      <button class="btn-logout" onclick="doLogout()">Cerrar sesión</button>
+    </div>
+  </div>
+
+  <div class="app-main">
+    <div class="app-topbar">
+      <div class="tb-title" id="app-title">Nueva factura</div>
+      <div class="tb-actions" id="tb-actions">
+        <button class="bsm bsm-outline" onclick="openPDF()">Vista previa PDF</button>
+        <button class="bsm bsm-tc" onclick="guardarFactura()">Guardar comprobante</button>
+      </div>
+    </div>
+    <div class="app-content">
+
+      <!-- NUEVA FACTURA -->
+      <div id="view-nueva">
+        <div class="g2" style="margin-bottom:1rem;">
+          <div class="acard">
+            <div class="acard-title">Profesional (emisor)</div>
+            <div class="ff"><label>Nombre y título</label><input id="e-nombre" type="text" placeholder="Lic. María García"></div>
+            <div class="g2">
+              <div class="ff"><label>CUIT</label><input id="e-cuit" type="text" placeholder="27-12345678-9"></div>
+              <div class="ff"><label>Condición IVA</label><select id="e-iva"><option>Monotributista</option><option>Responsable Inscripto</option><option>Exento</option></select></div>
+            </div>
+            <div class="ff"><label>Matrícula</label><input id="e-mat" type="text" placeholder="M.N. 12345 · M.P. 67890"></div>
+            <div class="ff"><label>Dirección del consultorio</label><input id="e-dir" type="text" placeholder="Av. Callao 1234 Piso 3°, CABA"></div>
+            <div class="ff"><label>Tel / Email profesional</label><input id="e-tel" type="text" placeholder="+54 11 4567-8901 · lic@consulta.com"></div>
+          </div>
+          <div class="acard">
+            <div class="acard-title">Paciente</div>
+            <div style="display:flex;gap:7px;align-items:flex-end;margin-bottom:.9rem;">
+              <div style="flex:1;"><label style="font-size:11px;font-weight:500;color:var(--ink3);display:block;margin-bottom:5px;">Nombre del paciente</label><input id="p-nombre" type="text" placeholder="Lucía M."></div>
+              <button class="bsm bsm-outline" style="height:38px;white-space:nowrap;" onclick="openPickPac()">Elegir</button>
+            </div>
+            <div class="g2">
+              <div class="ff"><label>DNI</label><input id="p-dni" type="text" placeholder="12.345.678"></div>
+              <div class="ff"><label>Tipo de paciente</label><select id="p-tipo"><option>Niño/a (0–12)</option><option>Adolescente (13–17)</option><option>Adulto (18+)</option><option>Adulto mayor (65+)</option></select></div>
+            </div>
+            <div class="ff">
+              <label>Obra social / Prepaga</label>
+              <select id="p-os" onchange="calcCoseguro()">
+                <option value="">Particular (sin cobertura)</option>
+                <option>OSDE</option><option>Galeno</option><option>Swiss Medical</option>
+                <option>PAMI</option><option>IOMA</option><option>Medifé</option>
+                <option>Accord Salud</option><option>Sancor Salud</option><option>Otra</option>
+              </select>
+            </div>
+            <div class="g2">
+              <div class="ff"><label>N° de afiliado</label><input id="p-afiliado" type="text" placeholder="1234567890-00"></div>
+              <div class="ff"><label>Sesiones autorizadas</label><input id="p-sesauth" type="number" placeholder="12" min="1"></div>
+            </div>
+            <div class="ff"><label>Tutor/Responsable (si es menor)</label><input id="p-tutor" type="text" placeholder="Ana García · DNI 25.678.901"></div>
+          </div>
+        </div>
+
+        <div class="acard" style="margin-bottom:1rem;">
+          <div class="acard-title">Datos del comprobante</div>
+          <div class="g3">
+            <div class="ff"><label>Tipo</label><select id="c-tipo"><option>Factura C</option><option>Factura B</option><option>Factura A</option><option>Recibo</option><option>Presupuesto</option></select></div>
+            <div class="ff"><label>Número</label><input id="c-num" type="text" value="0001-00000001"></div>
+            <div class="ff"><label>Fecha de emisión</label><input id="c-fecha" type="date"></div>
+            <div class="ff"><label>Fecha de vencimiento</label><input id="c-vto" type="date"></div>
+            <div class="ff"><label>Período prestado</label><input id="c-periodo" type="text" placeholder="Mayo 2025"></div>
+            <div class="ff"><label>Condición de pago</label><select id="c-cond"><option>Contado</option><option>Transferencia bancaria</option><option>MercadoPago</option><option>Obra social directa</option><option>Cheque</option></select></div>
+          </div>
+        </div>
+
+        <div class="acard">
+          <div class="acard-title">Sesiones e ítems a facturar</div>
+          <table class="itbl">
+            <thead><tr>
+              <th style="width:42%;">Descripción de la prestación</th>
+              <th style="width:8%;">Cant.</th>
+              <th style="width:18%;">Precio unit.</th>
+              <th style="width:10%;">IVA</th>
+              <th style="width:15%;text-align:right;">Subtotal</th>
+              <th style="width:7%;"></th>
+            </tr></thead>
+            <tbody id="items-body"></tbody>
+          </table>
+          <div style="display:flex;gap:9px;margin-top:1rem;flex-wrap:wrap;align-items:center;">
+            <button class="bsm bsm-outline" onclick="addItem()">+ Agregar ítem</button>
+            <button class="bsm bsm-outline" onclick="showView('aranceles');notify('Hacé clic en Usar para agregar')">▣ Desde aranceles</button>
+            <button class="bsm bsm-tc" onclick="toggleAI()">✦ IA: sugerir prestaciones</button>
+            <div id="coseguro-pill" class="coseguro-pill"></div>
+          </div>
+          <div id="ai-panel" style="display:none;">
+            <div class="ai-wrap">
+              <div class="ai-hdr"><span class="ai-ttl">✦ Asistente IA — Psicopedagogía</span><span class="ai-sp" id="ai-sp"></span></div>
+              <input class="ai-ctx" id="ai-ctx" placeholder="Describí la sesión: ej. 'evaluación inicial niño 7 años dislexia, OSDE', 'seguimiento adulto TDA/H particular'...">
+              <div style="display:flex;gap:9px;margin-bottom:.875rem;">
+                <button class="bsm bsm-tc" onclick="runAI()">Generar sugerencias →</button>
+                <button class="bsm bsm-outline" onclick="document.getElementById('ai-panel').style.display='none'">Cerrar</button>
+              </div>
+              <div id="ai-sugs"></div>
+            </div>
+          </div>
+          <div class="totals-box">
+            <div class="trow"><span>Subtotal neto</span><span id="tot-neto">$ 0,00</span></div>
+            <div class="trow"><span>IVA</span><span id="tot-iva">$ 0,00</span></div>
+            <div class="trow grand"><span>Total</span><span id="tot-total">$ 0,00</span></div>
+          </div>
+          <div class="ff" style="margin-top:1rem;">
+            <label>Observaciones (aparecen en el comprobante)</label>
+            <textarea id="obs" placeholder="Ej: Prestación de salud. IVA exento según Ley 23.877..."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- DASHBOARD -->
+      <div id="view-dashboard" style="display:none;">
+        <div class="dash-stats">
+          <div class="dstat">
+            <div class="dstat-l">Total facturado</div>
+            <div class="dstat-v t" id="ds-total">$ 0</div>
+            <div class="dstat-s" id="ds-sub"></div>
+          </div>
+          <div class="dstat">
+            <div class="dstat-l">Este mes</div>
+            <div class="dstat-v" id="ds-mes">$ 0</div>
+          </div>
+          <div class="dstat">
+            <div class="dstat-l">Comprobantes</div>
+            <div class="dstat-v" id="ds-count">0</div>
+          </div>
+          <div class="dstat">
+            <div class="dstat-l">Pacientes activos</div>
+            <div class="dstat-v" id="ds-pac">0</div>
+          </div>
+        </div>
+        <div class="acard" style="margin-bottom:1rem;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.125rem;">
+            <div class="acard-title" style="margin:0;">Últimos comprobantes</div>
+            <div style="font-size:12px;color:var(--ink4);">
+              Pendientes: <span id="ds-pend" style="font-weight:600;color:var(--warn);">0</span>
+              <span id="ds-pend-monto" style="margin-left:6px;"></span>
+            </div>
+          </div>
+          <div id="dash-tbl"></div>
+        </div>
+      </div>
+
+      <!-- FACTURAS -->
+      <div id="view-facturas" style="display:none;">
+        <div class="acard">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.125rem;">
+            <div class="acard-title" style="margin:0;">Todos los comprobantes</div>
+            <div class="search-wrap">
+              <span class="search-ic">🔍</span>
+              <input type="text" id="search-f" placeholder="Buscar..." oninput="filtrarF()"
+                style="padding:7px 12px 7px 30px;border:1px solid var(--bd);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:12px;background:var(--cr3);color:var(--ink);outline:none;transition:all .2s;width:220px;">
+            </div>
+          </div>
+          <div id="f-tbl"></div>
+        </div>
+      </div>
+
+      <!-- PACIENTES -->
+      <div id="view-pacientes" style="display:none;">
+        <div class="acard">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.125rem;">
+            <div class="acard-title" style="margin:0;">Pacientes registrados</div>
+            <div class="search-wrap">
+              <span class="search-ic">🔍</span>
+              <input type="text" id="search-p" placeholder="Buscar..." oninput="filtrarPac()"
+                style="padding:7px 12px 7px 30px;border:1px solid var(--bd);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:12px;background:var(--cr3);color:var(--ink);outline:none;transition:all .2s;width:220px;">
+            </div>
+          </div>
+          <div id="pac-tbl"></div>
+          <div style="margin-top:1.5rem;padding-top:1.5rem;border-top:1px solid var(--bd);">
+            <div style="font-size:11px;font-weight:500;color:var(--ink2);margin-bottom:1rem;letter-spacing:.05em;text-transform:uppercase;">Agregar nuevo paciente</div>
+            <div class="g3">
+              <div class="ff"><label>Nombre completo</label><input id="np-nombre" type="text" placeholder="Lucía Martínez"></div>
+              <div class="ff"><label>DNI</label><input id="np-dni" type="text" placeholder="12.345.678"></div>
+              <div class="ff"><label>Fecha de nacimiento</label><input id="np-nac" type="date"></div>
+              <div class="ff"><label>Tipo de paciente</label><select id="np-tipo"><option>Niño/a (0–12)</option><option>Adolescente (13–17)</option><option>Adulto (18+)</option><option>Adulto mayor (65+)</option></select></div>
+              <div class="ff"><label>Obra social</label><select id="np-os"><option value="">Particular</option><option>OSDE</option><option>Galeno</option><option>Swiss Medical</option><option>PAMI</option><option>IOMA</option><option>Medifé</option><option>Accord Salud</option><option>Sancor Salud</option><option>Otra</option></select></div>
+              <div class="ff"><label>N° afiliado</label><input id="np-afiliado" type="text" placeholder="1234567890-00"></div>
+              <div class="ff"><label>Tutor/Responsable</label><input id="np-tutor" type="text" placeholder="Nombre y DNI del tutor"></div>
+              <div class="ff"><label>Email de contacto</label><input id="np-email" type="email" placeholder="contacto@email.com"></div>
+            </div>
+            <button class="bsm bsm-tc" onclick="guardarPac()">Guardar paciente</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SESIONES -->
+      <div id="view-sesiones" style="display:none;">
+        <div class="acard">
+          <div class="acard-title">Registro de sesiones</div>
+          <div id="ses-tbl"></div>
+          <div style="margin-top:1.5rem;padding-top:1.5rem;border-top:1px solid var(--bd);">
+            <div style="font-size:11px;font-weight:500;color:var(--ink2);margin-bottom:1rem;letter-spacing:.05em;text-transform:uppercase;">Registrar sesión</div>
+            <div class="g3">
+              <div class="ff"><label>Paciente</label><input id="ns-pac" type="text" placeholder="Nombre"></div>
+              <div class="ff"><label>Fecha</label><input id="ns-fecha" type="date"></div>
+              <div class="ff"><label>Tipo de sesión</label>
+                <select id="ns-tipo">
+                  <option>Evaluación inicial</option><option>Sesión de intervención</option>
+                  <option>Entrevista familiar</option><option>Informe escrito</option>
+                  <option>Devolución diagnóstica</option><option>Estimulación cognitiva</option>
+                  <option>Orientación a padres</option>
+                </select>
+              </div>
+              <div class="ff"><label>Duración</label><select id="ns-dur"><option>30 min</option><option>45 min</option><option>60 min</option><option>90 min</option></select></div>
+              <div class="ff"><label>Monto cobrado</label><input id="ns-monto" type="number" placeholder="0"></div>
+              <div class="ff"><label>Estado</label><select id="ns-estado"><option>Cobrado</option><option>Pendiente</option><option>Obra social directa</option></select></div>
+            </div>
+            <div class="ff"><label>Notas (no aparecen en factura)</label><textarea id="ns-notas" placeholder="Observaciones clínicas..."></textarea></div>
+            <button class="bsm bsm-tc" onclick="guardarSes()">Registrar sesión</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ARANCELES -->
+      <div id="view-aranceles" style="display:none;">
+        <div class="acard">
+          <div class="acard-title">Aranceles y prestaciones</div>
+          <div id="ar-tbl"></div>
+          <div style="margin-top:1.5rem;padding-top:1.5rem;border-top:1px solid var(--bd);">
+            <div style="font-size:11px;font-weight:500;color:var(--ink2);margin-bottom:1rem;letter-spacing:.05em;text-transform:uppercase;">Agregar arancel</div>
+            <div class="g2">
+              <div class="ff"><label>Nombre de la prestación</label><input id="na-desc" type="text" placeholder="Sesión de intervención 60 min"></div>
+              <div class="ff"><label>Precio</label><input id="na-precio" type="number" placeholder="0" min="0"></div>
+              <div class="ff"><label>IVA</label><select id="na-iva"><option value="0">0% — Exento (salud)</option><option value="21">21%</option><option value="10.5">10.5%</option></select></div>
+              <div class="ff"><label>Categoría</label><select id="na-cat"><option>Evaluación</option><option>Intervención</option><option>Informe</option><option>Orientación</option><option>Estimulación</option><option>Otro</option></select></div>
+            </div>
+            <button class="bsm bsm-tc" onclick="guardarArancel()">Guardar arancel</button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /app-content -->
+  </div><!-- /app-main -->
+</div><!-- /page-app -->
+
+<!-- PERFIL MODAL -->
+<div class="overlay" id="overlay-perfil">
+  <div class="modal" style="width:580px;">
+    <div class="modal-hdr">
+      <div class="modal-title">Mi perfil profesional</div>
+      <button class="modal-close" onclick="closePerfil()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="perfil-photo-row">
+        <div class="perfil-photo-lg" id="perfil-photo-lg"><span id="perfil-photo-txt">?</span></div>
+        <div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:1.25rem;font-weight:500;" id="perfil-nombre-display">—</div>
+          <div style="font-size:12px;color:var(--ink3);" id="perfil-esp-display">—</div>
+          <button onclick="document.getElementById('inp-foto-edit').click()" style="font-size:11px;color:var(--tc);border:none;background:none;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:5px;font-weight:500;">Cambiar foto</button>
+          <input type="file" id="inp-foto-edit" accept="image/*" style="display:none;" onchange="handleFotoEdit(this)">
+        </div>
+      </div>
+      <div class="g2">
+        <div class="ff"><label>Nombre</label><input id="pe-nombre" type="text"></div>
+        <div class="ff"><label>Apellido</label><input id="pe-apellido" type="text"></div>
+        <div class="ff"><label>Título</label><select id="pe-titulo"><option>Lic. en Psicopedagogía</option><option>Prof. en Psicopedagogía</option><option>Lic. en Fonoaudiología</option><option>Lic. en Psicología</option><option>Otro</option></select></div>
+        <div class="ff"><label>Email</label><input id="pe-email" type="email"></div>
+        <div class="ff"><label>CUIT</label><input id="pe-cuit" type="text"></div>
+        <div class="ff"><label>Condición IVA</label><select id="pe-iva"><option>Monotributista</option><option>Responsable Inscripto</option><option>Exento</option></select></div>
+        <div class="ff"><label>Matrícula nacional</label><input id="pe-mat" type="text"></div>
+        <div class="ff"><label>Matrícula provincial</label><input id="pe-matp" type="text"></div>
+      </div>
+      <div class="ff"><label>Dirección del consultorio</label><input id="pe-dir" type="text"></div>
+      <div class="ff"><label>Teléfono / WhatsApp</label><input id="pe-tel" type="text"></div>
+      <div class="ff"><label>Nueva contraseña (dejá vacío para mantener)</label><input id="pe-pass" type="password" placeholder="••••••••"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="bsm bsm-outline" onclick="closePerfil()">Cancelar</button>
+      <button class="bsm bsm-tc" onclick="guardarPerfil()">Guardar cambios</button>
+    </div>
+  </div>
+</div>
+
+<!-- PDF MODAL -->
+<div class="overlay" id="overlay-pdf">
+  <div class="modal" style="width:720px;">
+    <div class="modal-hdr">
+      <div class="modal-title">Vista previa del comprobante</div>
+      <button class="modal-close" onclick="closePDF()">✕</button>
+    </div>
+    <div id="pdf-doc">
+      <div style="padding:2.5rem 2.5rem 0;">
+        <div class="pdf-hdr">
+          <div>
+            <div class="pdf-co-logo"><div class="pdf-lm">S</div><span style="font-family:'Cormorant Garamond',serif;font-size:13px;font-weight:600;color:var(--ink);">SanaMente</span></div>
+            <div class="pdf-co-name" id="pdf-co-name">—</div>
+            <div class="pdf-co-det" id="pdf-co-det"></div>
+          </div>
+          <div>
+            <div class="pdf-type" id="pdf-type">FACTURA C</div>
+            <div class="pdf-num" id="pdf-num">N° 0001-00000001</div>
+            <div class="pdf-num" id="pdf-fecha-lbl"></div>
+            <div class="pdf-num" id="pdf-periodo-lbl" style="color:var(--tcd);"></div>
+          </div>
+        </div>
+        <div class="pdf-meta">
+          <div class="pdf-mb">
+            <label>Paciente</label>
+            <div class="pv" id="pdf-p-nombre">—</div>
+            <div class="ps" id="pdf-p-dni"></div>
+            <div class="ps" id="pdf-p-tipo"></div>
+            <div class="ps" id="pdf-p-os"></div>
+            <div class="ps" id="pdf-p-afiliado"></div>
+            <div class="ps" id="pdf-p-tutor"></div>
+          </div>
+          <div class="pdf-mb">
+            <label>Condición de pago</label>
+            <div class="pv" id="pdf-cond">Contado</div>
+            <div class="ps" id="pdf-vto-lbl"></div>
+            <label style="margin-top:10px;">Período de prestación</label>
+            <div class="pv" id="pdf-periodo2">—</div>
+          </div>
+        </div>
+        <table class="pdf-tbl">
+          <thead><tr>
+            <th style="width:44%;">Prestación / Descripción</th>
+            <th style="width:8%;text-align:center;">Cant.</th>
+            <th style="width:17%;text-align:right;">Precio u.</th>
+            <th style="width:10%;text-align:center;">IVA</th>
+            <th style="width:21%;text-align:right;">Subtotal</th>
+          </tr></thead>
+          <tbody id="pdf-items-body"></tbody>
+        </table>
+        <div class="pdf-totals">
+          <div class="pdf-tr"><span>Subtotal neto</span><span id="pdf-neto">$ 0,00</span></div>
+          <div class="pdf-tr"><span>IVA</span><span id="pdf-iva">$ 0,00</span></div>
+          <div class="pdf-tr pdf-grand"><span>Total a cobrar</span><span id="pdf-total">$ 0,00</span></div>
+        </div>
+        <div class="pdf-foot" id="pdf-foot"></div>
+      </div>
+    </div>
+    <div style="padding:.875rem 2rem 1.5rem;border-top:1px solid var(--bd);display:flex;justify-content:flex-end;gap:9px;">
+      <button class="bsm bsm-outline" onclick="closePDF()">Cerrar</button>
+      <button class="bsm bsm-primary" onclick="exportPDF()">⬇ Descargar PDF</button>
+      <button class="bsm bsm-tc" onclick="window.print()">Imprimir</button>
+    </div>
+  </div>
+</div>
+
+<!-- PICKER PACIENTES -->
+<div class="overlay" id="overlay-pac" style="z-index:300;">
+  <div class="modal" style="width:500px;">
+    <div class="modal-hdr">
+      <div class="modal-title">Seleccionar paciente</div>
+      <button class="modal-close" onclick="closePickPac()">✕</button>
+    </div>
+    <div class="modal-body" style="padding:1.1rem 1.5rem 1.5rem;">
+      <input id="pac-search" type="text" placeholder="Buscar por nombre, obra social o DNI..." oninput="renderPickPac()"
+        style="width:100%;padding:9px 12px;border:1px solid var(--bd);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:13px;margin-bottom:1rem;outline:none;background:var(--cr3);color:var(--ink);transition:all .2s;">
+      <div id="pac-pick-list" style="max-height:380px;overflow-y:auto;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- NOTIF -->
+<div class="notif" id="notif"><div class="ndot" id="ndot"></div><span id="notif-msg"></span></div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// PERSISTENCIA — localStorage
+// ═══════════════════════════════════════════════════════
+const LS = {
+  save(key, data){ try{ localStorage.setItem('sm_'+key, JSON.stringify(data)); }catch(e){} },
+  load(key, def){ try{ const v=localStorage.getItem('sm_'+key); return v!==null?JSON.parse(v):def; }catch(e){ return def; } },
+  del(key){ try{ localStorage.removeItem('sm_'+key); }catch(e){} },
+};
+
+// ═══════════════════════════════════════════════════════
+// ESTADO GLOBAL
+// ═══════════════════════════════════════════════════════
+const APP = {
+  cuentas: LS.load('cuentas', {}),
+  usuario: null,
+  fotoReg: '',
+  fotoEdit: '',
+  items: [],
+  facturas: [],
+  facturasId: 0,
+  pacientes: [],
+  sesiones: [],
+  aranceles: [],
+};
+
+// Aranceles por defecto (si no hay para el usuario)
+const DEFAULT_ARANCELES = [
+  {desc:'Evaluación psicopedagógica inicial (60 min)',precio:18500,iva:0,cat:'Evaluación'},
+  {desc:'Sesión de intervención individual (45 min)',precio:12000,iva:0,cat:'Intervención'},
+  {desc:'Entrevista familiar / Orientación a padres',precio:10500,iva:0,cat:'Orientación'},
+  {desc:'Informe psicopedagógico escrito',precio:15000,iva:0,cat:'Informe'},
+  {desc:'Devolución diagnóstica',precio:10500,iva:0,cat:'Evaluación'},
+  {desc:'Estimulación cognitiva (adultos 60 min)',precio:14000,iva:0,cat:'Estimulación'},
+];
+const DEFAULT_PACIENTES = [
+  {nombre:'Lucía Martínez',dni:'12.345.678',tipo:'Niño/a (0–12)',nac:'2017-03-12',os:'OSDE',afiliado:'987654321-00',tutor:'Ana Martínez · DNI 25.678.901',email:'ana.m@gmail.com'},
+  {nombre:'Tomás Rodríguez',dni:'34.567.890',tipo:'Adolescente (13–17)',nac:'2009-07-20',os:'Galeno',afiliado:'456789012-01',tutor:'Carlos Rodríguez · DNI 22.456.789',email:'carlos.r@gmail.com'},
+  {nombre:'Silvia Fernández',dni:'18.901.234',tipo:'Adulto mayor (65+)',nac:'1952-11-05',os:'PAMI',afiliado:'123456789-00',tutor:'',email:'silvia.f@outlook.com'},
+];
+
+const COSEGUROS = {OSDE:.2,Galeno:.25,PAMI:.15,'Swiss Medical':.2,IOMA:.25,'Medifé':.2,'Accord Salud':.3,'Sancor Salud':.25,Otra:.3};
+const VIEWS = ['nueva','dashboard','facturas','pacientes','sesiones','aranceles'];
+const VIEW_TITLES = {nueva:'Nueva factura',dashboard:'Dashboard',facturas:'Comprobantes emitidos',pacientes:'Pacientes',sesiones:'Sesiones',aranceles:'Aranceles y prestaciones'};
+
+// ═══════════════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════════════
+const G = {
+  val(id){ const el=document.getElementById(id); return el?(el.value||''):''; },
+  set(id,v){ const el=document.getElementById(id); if(el) el.value=v||''; },
+  txt(id,v){ const el=document.getElementById(id); if(el) el.textContent=v; },
+  html(id,v){ const el=document.getElementById(id); if(el) el.innerHTML=v; },
+  show(id){ const el=document.getElementById(id); if(el) el.style.display=''; },
+  hide(id){ const el=document.getElementById(id); if(el) el.style.display='none'; },
+  esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); },
+  fmt(n){ return '$ '+Number(n||0).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}); },
+  fmtC(n){ if(n>=1000000) return '$ '+(n/1000000).toFixed(1)+'M'; if(n>=1000) return '$ '+(n/1000).toFixed(0)+'K'; return G.fmt(n); },
+  fecha(s){ if(!s||!s.includes('-')) return s||'—'; const [y,m,d]=s.split('-'); return `${d}/${m}/${y}`; },
+  selectByText(id,val){
+    const el=document.getElementById(id); if(!el) return;
+    for(let i=0;i<el.options.length;i++){
+      if(el.options[i].text===val||el.options[i].value===val){ el.selectedIndex=i; return; }
+    }
+  },
+};
+
+let _notifTimer=null;
+function notify(msg,type='ok'){
+  const n=document.getElementById('notif');
+  const dot=document.getElementById('ndot');
+  if(!n) return;
+  document.getElementById('notif-msg').textContent=msg;
+  n.className='notif on'+(type==='err'?' err':'');
+  dot.className='ndot'+(type==='err'?' red':'');
+  clearTimeout(_notifTimer);
+  _notifTimer=setTimeout(()=>n.classList.remove('on'),3500);
+}
+function showErr(id,msg){ const el=document.getElementById(id); if(el){el.textContent=msg;el.style.display='block';} }
+function clearErr(id){ const el=document.getElementById(id); if(el){el.textContent='';el.style.display='none';} }
+
+// ═══════════════════════════════════════════════════════
+// PÁGINAS
+// ═══════════════════════════════════════════════════════
+function setActivePage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function gotoLanding(){ setActivePage('page-landing'); window.scrollTo({top:0,behavior:'smooth'}); }
+function gotoLogin(tab){ setActivePage('page-login'); switchTab(tab||'ingreso'); }
+function landingScrollTo(id){ const el=document.getElementById(id); if(el) el.scrollIntoView({behavior:'smooth'}); }
+
+// ═══════════════════════════════════════════════════════
+// TABS LOGIN
+// ═══════════════════════════════════════════════════════
+function switchTab(t){
+  ['ingreso','registro'].forEach(x=>{
+    document.getElementById('tab-'+x).classList.toggle('active',x===t);
+    document.getElementById('form-'+x).style.display=x===t?'block':'none';
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+// FOTO PERFIL
+// ═══════════════════════════════════════════════════════
+function handleFoto(inp){
+  const f=inp.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=e=>{
+    APP.fotoReg=e.target.result;
+    const prev=document.getElementById('foto-preview');
+    if(prev){ prev.src=APP.fotoReg; prev.style.display='block'; }
+    const ph=document.getElementById('foto-placeholder');
+    if(ph) ph.style.display='none';
+  };
+  r.readAsDataURL(f);
+}
+function handleFotoEdit(inp){
+  const f=inp.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=e=>{ APP.fotoEdit=e.target.result; renderPerfilFoto(APP.fotoEdit,APP.usuario?APP.usuario.iniciales:'?'); };
+  r.readAsDataURL(f);
+}
+function resetFotoReg(){
+  APP.fotoReg='';
+  const prev=document.getElementById('foto-preview');
+  if(prev){ prev.src=''; prev.style.display='none'; }
+  const ph=document.getElementById('foto-placeholder');
+  if(ph) ph.style.display='flex';
+  const inp=document.getElementById('inp-foto');
+  if(inp) inp.value='';
+}
+
+// ═══════════════════════════════════════════════════════
+// DATOS POR USUARIO — carga y guardado
+// ═══════════════════════════════════════════════════════
+function userKey(email,section){ return `${email}_${section}`; }
+
+function cargarDatosUsuario(email){
+  APP.pacientes = LS.load(userKey(email,'pacientes'), DEFAULT_PACIENTES.map(p=>({...p})));
+  APP.aranceles = LS.load(userKey(email,'aranceles'), DEFAULT_ARANCELES.map(a=>({...a})));
+  APP.facturas  = LS.load(userKey(email,'facturas'), []);
+  APP.sesiones  = LS.load(userKey(email,'sesiones'), []);
+  APP.facturasId= LS.load(userKey(email,'facturasId'), 0);
+  APP.items     = [];
+}
+
+function guardarDatosUsuario(){
+  if(!APP.usuario) return;
+  const em=APP.usuario.email;
+  LS.save(userKey(em,'pacientes'), APP.pacientes);
+  LS.save(userKey(em,'aranceles'), APP.aranceles);
+  LS.save(userKey(em,'facturas'),  APP.facturas);
+  LS.save(userKey(em,'sesiones'),  APP.sesiones);
+  LS.save(userKey(em,'facturasId'),APP.facturasId);
+}
+
+// Guardado automático
+function autosave(){ guardarDatosUsuario(); }
+
+// ═══════════════════════════════════════════════════════
+// REGISTRO
+// ═══════════════════════════════════════════════════════
+function doRegistro(){
+  clearErr('r-err');
+  const nombre  = G.val('r-nombre').trim();
+  const apellido= G.val('r-apellido').trim();
+  const email   = G.val('r-email').trim().toLowerCase();
+  const pass    = G.val('r-pass');
+  if(!nombre||!apellido) { showErr('r-err','Ingresá nombre y apellido.'); return; }
+  if(!email.includes('@')){ showErr('r-err','Email inválido.'); return; }
+  if(pass.length<6)       { showErr('r-err','La contraseña debe tener al menos 6 caracteres.'); return; }
+  if(APP.cuentas[email])  { showErr('r-err','Ya existe una cuenta con ese email. Iniciá sesión.'); return; }
+  const perfil={
+    nombre,apellido,email,pass,
+    titulo:G.val('r-titulo'),
+    mat:G.val('r-mat'),
+    matp:G.val('r-matp'),
+    cuit:G.val('r-cuit'),
+    iva:G.val('r-iva'),
+    dir:G.val('r-dir'),
+    tel:G.val('r-tel'),
+    foto:APP.fotoReg,
+    iniciales:(nombre[0]+(apellido[0]||'')).toUpperCase(),
+  };
+  APP.cuentas[email]=perfil;
+  LS.save('cuentas', APP.cuentas);
+  resetFotoReg();
+  entrarApp(perfil);
+}
+
+// ═══════════════════════════════════════════════════════
+// LOGIN
+// ═══════════════════════════════════════════════════════
+function doLogin(){
+  clearErr('i-err');
+  const email=G.val('i-email').trim().toLowerCase();
+  const pass =G.val('i-pass');
+  if(!APP.cuentas[email]){ showErr('i-err','No existe cuenta con ese email. Registrate primero.'); return; }
+  if(APP.cuentas[email].pass!==pass){ showErr('i-err','Contraseña incorrecta.'); return; }
+  entrarApp(APP.cuentas[email]);
+}
+function doLogout(){
+  guardarDatosUsuario();
+  APP.usuario=null; APP.items=[];
+  LS.del('sesionActiva');
+  gotoLanding();
+}
+
+// ═══════════════════════════════════════════════════════
+// ENTRAR APP
+// ═══════════════════════════════════════════════════════
+function entrarApp(perfil){
+  APP.usuario=perfil;
+  APP.fotoReg='';
+  cargarDatosUsuario(perfil.email);
+  LS.save('sesionActiva', perfil.email);
+  renderSidebarUser(perfil);
+  precompletarEmisor(perfil);
+  setActivePage('page-app');
+  showView('nueva');
+  initFechas();
+  if(!APP.items.length) addItem('Sesión de intervención individual (45 min)',1,12000,0);
+  renderReviews();
+}
+
+function renderSidebarUser(p){
+  const av=document.getElementById('sb-av');
+  if(!av) return;
+  if(p.foto){
+    av.innerHTML=`<img src="${p.foto}" alt="${G.esc(p.nombre)}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+  } else {
+    av.innerHTML=`<span style="font-family:'Cormorant Garamond',serif;font-size:14px;">${p.iniciales}</span>`;
+  }
+  G.txt('sb-uname',`${p.titulo} ${p.nombre} ${p.apellido}`);
+  G.txt('sb-uesp',p.email);
+}
+
+function precompletarEmisor(p){
+  G.set('e-nombre',`${p.titulo} ${p.nombre} ${p.apellido}`);
+  G.set('e-cuit',p.cuit||'');
+  G.selectByText('e-iva',p.iva);
+  const matStr=[p.mat?'M.N. '+p.mat:'',p.matp?'M.P. '+p.matp:''].filter(Boolean).join(' · ');
+  G.set('e-mat',matStr);
+  G.set('e-dir',p.dir||'');
+  G.set('e-tel',[p.tel,p.email].filter(Boolean).join(' · '));
+}
+
+// ═══════════════════════════════════════════════════════
+// PERFIL MODAL
+// ═══════════════════════════════════════════════════════
+function openPerfil(){
+  const p=APP.usuario; if(!p) return;
+  G.set('pe-nombre',p.nombre); G.set('pe-apellido',p.apellido);
+  G.selectByText('pe-titulo',p.titulo);
+  G.set('pe-email',p.email); G.set('pe-cuit',p.cuit||'');
+  G.selectByText('pe-iva',p.iva);
+  G.set('pe-mat',p.mat||''); G.set('pe-matp',p.matp||'');
+  G.set('pe-dir',p.dir||''); G.set('pe-tel',p.tel||''); G.set('pe-pass','');
+  G.txt('perfil-nombre-display',`${p.titulo} ${p.nombre} ${p.apellido}`);
+  G.txt('perfil-esp-display',p.email);
+  APP.fotoEdit='';
+  renderPerfilFoto(p.foto,p.iniciales);
+  document.getElementById('overlay-perfil').classList.add('open');
+}
+function closePerfil(){ document.getElementById('overlay-perfil').classList.remove('open'); }
+function renderPerfilFoto(foto,iniciales){
+  const el=document.getElementById('perfil-photo-lg');
+  if(!el) return;
+  el.innerHTML=foto
+    ?`<img src="${foto}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`
+    :`<span style="font-size:18px;">${iniciales||'?'}</span>`;
+}
+function guardarPerfil(){
+  const p=APP.usuario; if(!p) return;
+  const nombre=G.val('pe-nombre').trim();
+  const apellido=G.val('pe-apellido').trim();
+  if(!nombre||!apellido){ notify('Completá nombre y apellido','err'); return; }
+  const newPass=G.val('pe-pass');
+  if(newPass&&newPass.length<6){ notify('La contraseña debe tener al menos 6 caracteres','err'); return; }
+  const oldEmail=p.email;
+  p.nombre=nombre; p.apellido=apellido;
+  p.titulo=G.val('pe-titulo');
+  p.email=G.val('pe-email').trim().toLowerCase()||oldEmail;
+  p.cuit=G.val('pe-cuit'); p.iva=G.val('pe-iva');
+  p.mat=G.val('pe-mat'); p.matp=G.val('pe-matp');
+  p.dir=G.val('pe-dir'); p.tel=G.val('pe-tel');
+  p.iniciales=(nombre[0]+(apellido[0]||'')).toUpperCase();
+  if(APP.fotoEdit) p.foto=APP.fotoEdit;
+  if(newPass) p.pass=newPass;
+  delete APP.cuentas[oldEmail];
+  APP.cuentas[p.email]=p;
+  LS.save('cuentas',APP.cuentas);
+  if(p.email!==oldEmail){ LS.save('sesionActiva',p.email); }
+  renderSidebarUser(p);
+  precompletarEmisor(p);
+  closePerfil();
+  notify('Perfil actualizado ✓');
+}
+
+// ═══════════════════════════════════════════════════════
+// VISTAS APP
+// ═══════════════════════════════════════════════════════
+function showView(name){
+  VIEWS.forEach(x=>{ document.getElementById('view-'+x).style.display='none'; });
+  document.getElementById('view-'+name).style.display='block';
+  const navItems=document.querySelectorAll('.app-nav');
+  navItems.forEach((n,i)=>n.classList.toggle('active',VIEWS[i]===name));
+  G.txt('app-title',VIEW_TITLES[name]||name);
+  const tba=document.getElementById('tb-actions');
+  if(tba) tba.style.display=name==='nueva'?'flex':'none';
+  const renders={dashboard:renderDash,facturas:()=>renderFTbl(APP.facturas),pacientes:()=>renderPacTbl(APP.pacientes),sesiones:renderSes,aranceles:renderAr};
+  if(renders[name]) renders[name]();
+}
+
+// ═══════════════════════════════════════════════════════
+// ITEMS FACTURA
+// ═══════════════════════════════════════════════════════
+function addItem(desc='',qty=1,price=0,iva=0){
+  APP.items.push({id:Date.now()+Math.random(),desc,qty,price,iva});
+  renderItems();
+}
+function renderItems(){
+  const body=document.getElementById('items-body');
+  if(!body) return;
+  body.innerHTML='';
+  APP.items.forEach((it,i)=>{
+    const sub=it.qty*it.price;
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td><input type="text" value="${G.esc(it.desc)}" placeholder="Descripción de la prestación..." oninput="APP.items[${i}].desc=this.value"></td>
+      <td><input type="number" value="${it.qty}" min="0.5" step="0.5" style="width:54px;" oninput="APP.items[${i}].qty=parseFloat(this.value)||0;renderItems()"></td>
+      <td><input type="number" value="${it.price}" min="0" step="100" style="width:115px;" oninput="APP.items[${i}].price=parseFloat(this.value)||0;renderItems()"></td>
+      <td>
+        <select onchange="APP.items[${i}].iva=parseFloat(this.value);renderItems()" style="width:70px;">
+          <option value="0" ${it.iva==0?'selected':''}>0%</option>
+          <option value="10.5" ${it.iva==10.5?'selected':''}>10.5%</option>
+          <option value="21" ${it.iva==21?'selected':''}>21%</option>
+        </select>
+      </td>
+      <td class="r">${G.fmt(sub)}</td>
+      <td><button class="del-btn" title="Eliminar" onclick="APP.items.splice(${i},1);renderItems()">✕</button></td>`;
+    body.appendChild(tr);
+  });
+  calcTot();
+}
+function calcTot(){
+  let n=0,t=0;
+  APP.items.forEach(it=>{const s=it.qty*it.price; n+=s; t+=s*(it.iva/100);});
+  G.txt('tot-neto',G.fmt(n)); G.txt('tot-iva',G.fmt(t)); G.txt('tot-total',G.fmt(n+t));
+}
+function calcCoseguro(){
+  const os=G.val('p-os');
+  const pill=document.getElementById('coseguro-pill');
+  if(!pill) return;
+  if(os&&COSEGUROS[os]){ pill.style.display='block'; pill.textContent=`Coseguro ${os}: ${Math.round(COSEGUROS[os]*100)}%`; }
+  else { pill.style.display='none'; }
+}
+
+// ═══════════════════════════════════════════════════════
+// IA
+// ═══════════════════════════════════════════════════════
+function toggleAI(){
+  const p=document.getElementById('ai-panel');
+  if(!p) return;
+  const visible=p.style.display!=='none';
+  p.style.display=visible?'none':'block';
+  if(!visible) document.getElementById('ai-ctx').focus();
+}
+async function runAI(){
+  const sp=document.getElementById('ai-sp');
+  const sugs=document.getElementById('ai-sugs');
+  if(!sp||!sugs) return;
+  const ctx=G.val('ai-ctx');
+  const os=G.val('p-os')||'particular';
+  const tipo=G.val('p-tipo');
+  const p=APP.usuario;
+  const emisora=p?`${p.titulo} ${p.nombre} ${p.apellido}`:'psicopedagoga';
+  sp.style.display='inline-block';
+  sugs.innerHTML='<div style="font-size:12px;color:var(--ink4);padding:6px 0;">Analizando el caso...</div>';
+  const prompt=`Sos un asistente de facturación especializado en psicopedagogía argentina. Profesional: "${emisora}". Paciente tipo: "${tipo}". Cobertura: "${os}". ${ctx?`Contexto: "${ctx}".`:''}
+Generá exactamente 4 sugerencias de prestaciones psicopedagógicas para facturar.
+REGLAS: Prestaciones de salud en Argentina IVA 0%. Precios realistas ARS 2025. Nomenclatura psicopedagógica formal.
+Respondé ÚNICAMENTE con JSON válido, sin markdown: [{"desc":"descripción profesional","precio":12000,"iva":0,"qty":1},...]`;
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:900,messages:[{role:'user',content:prompt}]})});
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const data=await res.json();
+    if(data.error) throw new Error(data.error.message);
+    const txt=(data.content||[]).map(b=>b.text||'').join('');
+    const match=txt.match(/\[[\s\S]*\]/);
+    if(!match) throw new Error('Respuesta inesperada');
+    const arr=JSON.parse(match[0]);
+    sp.style.display='none'; sugs.innerHTML='';
+    arr.forEach(s=>{
+      const d=document.createElement('div');
+      d.className='ai-sug';
+      d.innerHTML=`<div class="ai-si"><div class="ai-sd">${G.esc(s.desc)}</div><div class="ai-sm">Cant: ${s.qty} · IVA: ${s.iva}%</div></div><span class="ai-sp2">${G.fmt(s.precio)}</span><button class="ai-add">+ Agregar</button>`;
+      d.querySelector('.ai-add').addEventListener('click',e=>{
+        e.stopPropagation();
+        addItem(s.desc,s.qty,s.precio,s.iva);
+        d.classList.add('used'); d.querySelector('.ai-add').textContent='✓ Agregado';
+        notify('Ítem agregado ✓');
+      });
+      sugs.appendChild(d);
+    });
+  }catch(err){
+    sp.style.display='none';
+    sugs.innerHTML=`<div style="font-size:12px;color:var(--err);padding:6px 0;">Error: ${G.esc(err.message)}. Revisá tu conexión.</div>`;
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// GUARDAR FACTURA
+// ═══════════════════════════════════════════════════════
+function guardarFactura(){
+  if(!APP.items.length){ notify('Agregá al menos un ítem','err'); return; }
+  const pac=G.val('p-nombre').trim();
+  if(!pac){ notify('Ingresá el nombre del paciente','err'); return; }
+  const num=G.val('c-num');
+  if(!num){ notify('Completá el número de comprobante','err'); return; }
+  let n=0,t=0;
+  APP.items.forEach(it=>{const s=it.qty*it.price; n+=s; t+=s*(it.iva/100);});
+  const factura={
+    id:++APP.facturasId,num,pac,
+    tipo:G.val('c-tipo'),total:n+t,neto:n,ivaT:t,
+    fecha:G.val('c-fecha'),vto:G.val('c-vto'),cond:G.val('c-cond'),
+    periodo:G.val('c-periodo'),obs:G.val('obs'),cobrado:false,
+    emisor:{nombre:G.val('e-nombre'),cuit:G.val('e-cuit'),iva:G.val('e-iva'),mat:G.val('e-mat'),dir:G.val('e-dir'),tel:G.val('e-tel')},
+    paciente:{nombre:pac,dni:G.val('p-dni'),tipo:G.val('p-tipo'),os:G.val('p-os'),afiliado:G.val('p-afiliado'),tutor:G.val('p-tutor')},
+    items:APP.items.map(i=>({...i})),
+  };
+  APP.facturas.unshift(factura);
+  G.set('c-num',incNum(num));
+  APP.items=[]; renderItems(); G.set('obs','');
+  const aip=document.getElementById('ai-panel');
+  if(aip) aip.style.display='none';
+  autosave();
+  notify(`${factura.tipo} N° ${num} guardada ✓`);
+}
+function incNum(n){
+  const parts=n.split('-');
+  const last=parts[parts.length-1];
+  parts[parts.length-1]=String((parseInt(last)||0)+1).padStart(last.length,'0');
+  return parts.join('-');
+}
+
+// ═══════════════════════════════════════════════════════
+// DUPLICAR FACTURA
+// ═══════════════════════════════════════════════════════
+function duplicarFactura(id){
+  const f=APP.facturas.find(x=>x.id===id); if(!f) return;
+  G.set('e-nombre',f.emisor.nombre); G.set('e-cuit',f.emisor.cuit);
+  G.selectByText('e-iva',f.emisor.iva); G.set('e-mat',f.emisor.mat);
+  G.set('e-dir',f.emisor.dir); G.set('e-tel',f.emisor.tel);
+  G.set('p-nombre',f.paciente.nombre); G.set('p-dni',f.paciente.dni);
+  G.selectByText('p-tipo',f.paciente.tipo); G.selectByText('p-os',f.paciente.os||'');
+  G.set('p-afiliado',f.paciente.afiliado); G.set('p-tutor',f.paciente.tutor);
+  G.selectByText('c-tipo',f.tipo); G.selectByText('c-cond',f.cond);
+  G.set('c-periodo',f.periodo); G.set('obs',f.obs);
+  APP.items=f.items.map(i=>({...i,id:Date.now()+Math.random()}));
+  renderItems(); calcCoseguro(); showView('nueva');
+  notify('Factura duplicada — revisá los datos y guardá ✓');
+}
+
+// ═══════════════════════════════════════════════════════
+// DASHBOARD
+// ═══════════════════════════════════════════════════════
+function renderDash(){
+  const now=new Date(); const mes=now.getMonth(); const yr=now.getFullYear();
+  const tot=APP.facturas.reduce((a,f)=>a+f.total,0);
+  const mesT=APP.facturas.filter(f=>{const d=new Date(f.fecha);return d.getMonth()===mes&&d.getFullYear()===yr;}).reduce((a,f)=>a+f.total,0);
+  const pendList=APP.facturas.filter(f=>!f.cobrado&&f.cond!=='Obra social directa');
+  const pendAmt=pendList.reduce((a,f)=>a+f.total,0);
+  const uniqPac=new Set([...APP.facturas.map(f=>f.pac),...APP.pacientes.map(p=>p.nombre)]).size;
+  G.txt('ds-total',G.fmtC(tot));
+  G.txt('ds-sub',APP.facturas.length?APP.facturas.length+' comprobantes':'');
+  G.txt('ds-mes',G.fmtC(mesT));
+  G.txt('ds-count',APP.facturas.length);
+  G.txt('ds-pac',uniqPac);
+  G.txt('ds-pend',pendList.length);
+  G.txt('ds-pend-monto',pendAmt>0?G.fmtC(pendAmt)+' sin cobrar':'Al día ✓');
+  G.html('dash-tbl',buildFRows(APP.facturas.slice(0,6)));
+}
+
+// ═══════════════════════════════════════════════════════
+// TABLA FACTURAS
+// ═══════════════════════════════════════════════════════
+function buildFRows(list){
+  if(!list.length) return `<div style="text-align:center;padding:2.5rem;color:var(--ink4);"><div style="font-size:32px;margin-bottom:.5rem;">📄</div><div style="font-size:13px;">No hay comprobantes aún.<br><a onclick="showView('nueva')" style="color:var(--tc);cursor:pointer;">Crear la primera factura →</a></div></div>`;
+  return `<table class="dtbl"><thead><tr><th>Tipo y número</th><th>Paciente</th><th>Fecha</th><th>Total</th><th>Cobro</th><th style="text-align:right;">Acciones</th></tr></thead><tbody>
+  ${list.map(f=>`<tr>
+    <td style="font-weight:500;white-space:nowrap;">${G.esc(f.tipo)} ${G.esc(f.num)}</td>
+    <td style="color:var(--ink3);">${G.esc(f.pac)}</td>
+    <td style="color:var(--ink3);white-space:nowrap;">${G.fecha(f.fecha)}</td>
+    <td style="font-weight:500;white-space:nowrap;">${G.fmt(f.total)}</td>
+    <td><label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:12px;color:var(--ink3);">
+      <input type="checkbox" ${f.cobrado?'checked':''} onchange="toggleCobrado(${f.id},this.checked)" style="accent-color:var(--ok);cursor:pointer;">
+      <span class="badge ${f.cobrado?'badge-ok':'badge-pend'}">${f.cobrado?'Cobrado':'Pendiente'}</span>
+    </label></td>
+    <td style="text-align:right;"><div style="display:flex;gap:4px;justify-content:flex-end;">
+      <button class="btn-tbl" onclick="verPDFFactura(${f.id})">PDF</button>
+      <button class="btn-tbl" onclick="duplicarFactura(${f.id})">Duplicar</button>
+      <button class="btn-tbl" style="color:var(--err);border-color:rgba(212,90,90,.25);" onclick="eliminarFactura(${f.id})">✕</button>
+    </div></td>
+  </tr>`).join('')}
+  </tbody></table>`;
+}
+function renderFTbl(list){ G.html('f-tbl',buildFRows(list)); }
+function filtrarF(){
+  const q=G.val('search-f').toLowerCase();
+  renderFTbl(APP.facturas.filter(f=>f.pac.toLowerCase().includes(q)||f.num.toLowerCase().includes(q)||f.tipo.toLowerCase().includes(q)||(f.fecha||'').includes(q)));
+}
+function toggleCobrado(id,val){
+  const f=APP.facturas.find(x=>x.id===id);
+  if(f){ f.cobrado=val; renderFTbl(APP.facturas); autosave(); notify(val?'Marcado como cobrado ✓':'Marcado como pendiente'); }
+}
+function eliminarFactura(id){
+  if(!confirm('¿Eliminar este comprobante? Esta acción no se puede deshacer.')) return;
+  const idx=APP.facturas.findIndex(x=>x.id===id);
+  if(idx>-1){ APP.facturas.splice(idx,1); renderFTbl(APP.facturas); autosave(); notify('Comprobante eliminado'); }
+}
+
+// ═══════════════════════════════════════════════════════
+// PICKER PACIENTES
+// ═══════════════════════════════════════════════════════
+function openPickPac(){
+  G.set('pac-search',''); renderPickPac();
+  document.getElementById('overlay-pac').classList.add('open');
+  setTimeout(()=>{const el=document.getElementById('pac-search');if(el)el.focus();},120);
+}
+function closePickPac(){ document.getElementById('overlay-pac').classList.remove('open'); }
+function renderPickPac(){
+  const q=(G.val('pac-search')||'').toLowerCase();
+  const list=APP.pacientes.filter(p=>p.nombre.toLowerCase().includes(q)||(p.os||'').toLowerCase().includes(q)||(p.dni||'').includes(q));
+  if(!list.length){
+    G.html('pac-pick-list',`<div style="text-align:center;padding:1.5rem;color:var(--ink4);font-size:13px;">Sin resultados. <a onclick="closePickPac();showView('pacientes')" style="color:var(--tc);cursor:pointer;">Agregar paciente →</a></div>`);
+    return;
+  }
+  G.html('pac-pick-list',list.map(p=>`<div class="pac-item" onclick="seleccionarPac('${G.esc(p.nombre)}')"><div><div class="pac-item-name">${G.esc(p.nombre)}</div><div class="pac-item-det">${p.tipo}${p.dni?' · DNI '+p.dni:''}</div></div><span class="badge ${p.os?'badge-info':'badge-gray'}">${p.os||'Particular'}</span></div>`).join(''));
+}
+function seleccionarPac(nombre){
+  const p=APP.pacientes.find(x=>x.nombre===nombre); if(!p) return;
+  G.set('p-nombre',p.nombre); G.set('p-dni',p.dni||'');
+  G.selectByText('p-tipo',p.tipo); G.selectByText('p-os',p.os||'');
+  G.set('p-afiliado',p.afiliado||''); G.set('p-tutor',p.tutor||'');
+  calcCoseguro(); closePickPac(); notify('Paciente cargado: '+p.nombre+' ✓');
+}
+
+// ═══════════════════════════════════════════════════════
+// PACIENTES
+// ═══════════════════════════════════════════════════════
+function renderPacTbl(list){
+  const c=document.getElementById('pac-tbl'); if(!c) return;
+  if(!list.length){
+    c.innerHTML=`<div style="text-align:center;padding:2rem;color:var(--ink4);font-size:13px;"><div style="font-size:28px;margin-bottom:.5rem;">👤</div>Sin pacientes. Agregá uno abajo.</div>`;
+    return;
+  }
+  c.innerHTML=`<table class="dtbl"><thead><tr><th>Nombre</th><th>DNI</th><th>Tipo</th><th>Obra social</th><th>N° Afiliado</th><th>Email</th><th style="text-align:right;">Acciones</th></tr></thead><tbody>
+  ${list.map(p=>`<tr>
+    <td style="font-weight:500;">${G.esc(p.nombre)}</td>
+    <td style="color:var(--ink3);">${p.dni||'—'}</td>
+    <td><span class="badge badge-info">${p.tipo}</span></td>
+    <td>${p.os||'Particular'}</td>
+    <td style="color:var(--ink3);">${p.afiliado||'—'}</td>
+    <td style="color:var(--ink3);">${p.email||'—'}</td>
+    <td style="text-align:right;"><div style="display:flex;gap:4px;justify-content:flex-end;">
+      <button class="btn-tbl" onclick="seleccionarPac('${G.esc(p.nombre)}');showView('nueva')">Facturar</button>
+      <button class="btn-tbl" style="color:var(--err);border-color:rgba(212,90,90,.25);" onclick="eliminarPac('${G.esc(p.nombre)}')">✕</button>
+    </div></td>
+  </tr>`).join('')}
+  </tbody></table>`;
+}
+function filtrarPac(){
+  const q=G.val('search-p').toLowerCase();
+  renderPacTbl(APP.pacientes.filter(p=>p.nombre.toLowerCase().includes(q)||(p.os||'').toLowerCase().includes(q)||(p.dni||'').includes(q)||(p.email||'').toLowerCase().includes(q)));
+}
+function guardarPac(){
+  const nombre=G.val('np-nombre').trim();
+  if(!nombre){ notify('Ingresá el nombre del paciente','err'); return; }
+  if(APP.pacientes.find(p=>p.nombre.toLowerCase()===nombre.toLowerCase())){
+    if(!confirm('Ya existe un paciente con ese nombre. ¿Agregar igualmente?')) return;
+  }
+  APP.pacientes.push({nombre,dni:G.val('np-dni'),nac:G.val('np-nac'),tipo:G.val('np-tipo'),os:G.val('np-os'),afiliado:G.val('np-afiliado'),tutor:G.val('np-tutor'),email:G.val('np-email')});
+  ['np-nombre','np-dni','np-nac','np-afiliado','np-tutor','np-email'].forEach(id=>G.set(id,''));
+  renderPacTbl(APP.pacientes); autosave(); notify('Paciente guardado ✓');
+}
+function eliminarPac(nombre){
+  if(!confirm(`¿Eliminar a ${nombre}?`)) return;
+  const idx=APP.pacientes.findIndex(p=>p.nombre===nombre);
+  if(idx>-1){ APP.pacientes.splice(idx,1); renderPacTbl(APP.pacientes); autosave(); notify('Paciente eliminado'); }
+}
+
+// ═══════════════════════════════════════════════════════
+// SESIONES
+// ═══════════════════════════════════════════════════════
+function renderSes(){
+  const c=document.getElementById('ses-tbl'); if(!c) return;
+  if(!APP.sesiones.length){
+    c.innerHTML=`<div style="text-align:center;padding:2rem;color:var(--ink4);font-size:13px;"><div style="font-size:28px;margin-bottom:.5rem;">📋</div>Sin sesiones registradas.</div>`;
+    return;
+  }
+  c.innerHTML=`<table class="dtbl"><thead><tr><th>Paciente</th><th>Fecha</th><th>Tipo</th><th>Duración</th><th>Monto</th><th>Estado</th><th style="text-align:right;">Acciones</th></tr></thead><tbody>
+  ${APP.sesiones.map((s,i)=>`<tr>
+    <td style="font-weight:500;">${G.esc(s.pac)}</td>
+    <td style="color:var(--ink3);">${G.fecha(s.fecha)}</td>
+    <td>${G.esc(s.tipo)}</td>
+    <td>${s.dur}</td>
+    <td>${G.fmt(s.monto||0)}</td>
+    <td><span class="badge ${s.estado==='Cobrado'?'badge-ok':s.estado==='Pendiente'?'badge-pend':'badge-sg'}">${s.estado}</span></td>
+    <td style="text-align:right;"><div style="display:flex;gap:4px;justify-content:flex-end;">
+      <button class="btn-tbl" onclick="sesionAFactura(${i})">→ Facturar</button>
+      <button class="btn-tbl" style="color:var(--err);border-color:rgba(212,90,90,.25);" onclick="APP.sesiones.splice(${i},1);renderSes();autosave()">✕</button>
+    </div></td>
+  </tr>`).join('')}
+  </tbody></table>`;
+}
+function guardarSes(){
+  const pac=G.val('ns-pac').trim();
+  if(!pac){ notify('Ingresá el nombre del paciente','err'); return; }
+  APP.sesiones.unshift({pac,fecha:G.val('ns-fecha'),tipo:G.val('ns-tipo'),dur:G.val('ns-dur'),monto:parseFloat(G.val('ns-monto'))||0,estado:G.val('ns-estado'),notas:G.val('ns-notas')});
+  ['ns-pac','ns-monto','ns-notas'].forEach(id=>G.set(id,''));
+  renderSes(); autosave(); notify('Sesión registrada ✓');
+}
+function sesionAFactura(i){
+  const s=APP.sesiones[i]; if(!s) return;
+  G.set('p-nombre',s.pac); APP.items=[];
+  addItem(s.tipo,1,s.monto||0,0);
+  showView('nueva'); notify(`Sesión de ${s.pac} cargada ✓`);
+}
+
+// ═══════════════════════════════════════════════════════
+// ARANCELES
+// ═══════════════════════════════════════════════════════
+function renderAr(){
+  const c=document.getElementById('ar-tbl'); if(!c) return;
+  if(!APP.aranceles.length){
+    c.innerHTML=`<div style="text-align:center;padding:2rem;color:var(--ink4);font-size:13px;"><div style="font-size:28px;margin-bottom:.5rem;">▣</div>Sin aranceles.</div>`;
+    return;
+  }
+  c.innerHTML=`<table class="dtbl"><thead><tr><th>Prestación</th><th>Categoría</th><th>Precio</th><th>IVA</th><th style="text-align:right;">Acciones</th></tr></thead><tbody>
+  ${APP.aranceles.map((a,i)=>`<tr>
+    <td style="font-weight:500;">${G.esc(a.desc)}</td>
+    <td><span class="badge badge-info">${a.cat}</span></td>
+    <td>${G.fmt(a.precio)}</td>
+    <td>${a.iva}%</td>
+    <td style="text-align:right;"><div style="display:flex;gap:4px;justify-content:flex-end;">
+      <button class="btn-tbl" onclick="usarArancel(${i})">Usar</button>
+      <button class="btn-tbl" style="color:var(--err);border-color:rgba(212,90,90,.25);" onclick="if(confirm('¿Eliminar?')){APP.aranceles.splice(${i},1);renderAr();autosave();}">✕</button>
+    </div></td>
+  </tr>`).join('')}
+  </tbody></table>`;
+}
+function usarArancel(i){
+  const a=APP.aranceles[i]; addItem(a.desc,1,a.precio,a.iva);
+  showView('nueva'); notify('Arancel agregado ✓');
+}
+function guardarArancel(){
+  const d=G.val('na-desc').trim();
+  if(!d){ notify('Ingresá la descripción','err'); return; }
+  APP.aranceles.push({desc:d,precio:parseFloat(G.val('na-precio'))||0,iva:parseFloat(G.val('na-iva'))||0,cat:G.val('na-cat')});
+  G.set('na-desc',''); G.set('na-precio','');
+  renderAr(); autosave(); notify('Arancel guardado ✓');
+}
+
+// ═══════════════════════════════════════════════════════
+// PDF
+// ═══════════════════════════════════════════════════════
+function buildPDFSrc(id){
+  if(id!=null){ return APP.facturas.find(f=>f.id===id)||null; }
+  let n=0,t=0;
+  APP.items.forEach(it=>{const s=it.qty*it.price; n+=s; t+=s*(it.iva/100);});
+  return {
+    emisor:{nombre:G.val('e-nombre'),cuit:G.val('e-cuit'),iva:G.val('e-iva'),mat:G.val('e-mat'),dir:G.val('e-dir'),tel:G.val('e-tel')},
+    tipo:G.val('c-tipo'),num:G.val('c-num'),fecha:G.val('c-fecha'),vto:G.val('c-vto'),
+    cond:G.val('c-cond'),periodo:G.val('c-periodo'),obs:G.val('obs'),
+    paciente:{nombre:G.val('p-nombre'),dni:G.val('p-dni'),tipo:G.val('p-tipo'),os:G.val('p-os'),afiliado:G.val('p-afiliado'),tutor:G.val('p-tutor')},
+    items:APP.items,neto:n,ivaT:t,total:n+t,
+  };
+}
+function fillPDF(src){
+  G.txt('pdf-co-name',src.emisor.nombre||'—');
+  G.html('pdf-co-det',[src.emisor.cuit?'CUIT '+G.esc(src.emisor.cuit):'',G.esc(src.emisor.iva||''),G.esc(src.emisor.mat||''),G.esc(src.emisor.dir||''),G.esc(src.emisor.tel||'')].filter(Boolean).join('<br>'));
+  G.txt('pdf-type',(src.tipo||'FACTURA').toUpperCase());
+  G.txt('pdf-num','N° '+(src.num||''));
+  G.txt('pdf-fecha-lbl','Fecha: '+G.fecha(src.fecha));
+  G.txt('pdf-periodo-lbl',src.periodo?'Período: '+src.periodo:'');
+  G.txt('pdf-p-nombre',src.paciente.nombre||'—');
+  G.txt('pdf-p-dni',src.paciente.dni?'DNI: '+src.paciente.dni:'');
+  G.txt('pdf-p-tipo',src.paciente.tipo||'');
+  G.txt('pdf-p-os',src.paciente.os?'Cobertura: '+src.paciente.os:'Particular');
+  G.txt('pdf-p-afiliado',src.paciente.afiliado?'N° afiliado: '+src.paciente.afiliado:'');
+  G.txt('pdf-p-tutor',src.paciente.tutor?'Responsable: '+src.paciente.tutor:'');
+  G.txt('pdf-cond',src.cond||'Contado');
+  G.txt('pdf-vto-lbl',src.vto?'Vence: '+G.fecha(src.vto):'');
+  G.txt('pdf-periodo2',src.periodo||'—');
+  const body=document.getElementById('pdf-items-body'); body.innerHTML='';
+  (src.items||[]).forEach(it=>{
+    const sub=it.qty*it.price; const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${G.esc(it.desc)||'—'}</td><td style="text-align:center;">${it.qty}</td><td style="text-align:right;">${G.fmt(it.price)}</td><td style="text-align:center;">${it.iva}%</td><td style="text-align:right;">${G.fmt(sub)}</td>`;
+    body.appendChild(tr);
+  });
+  G.txt('pdf-neto',G.fmt(src.neto)); G.txt('pdf-iva',G.fmt(src.ivaT)); G.txt('pdf-total',G.fmt(src.total));
+  G.html('pdf-foot',src.obs?G.esc(src.obs).replace(/\n/g,'<br>'):'');
+}
+function openPDF(){
+  if(!APP.items.length){ notify('Agregá al menos un ítem para ver el PDF','err'); return; }
+  fillPDF(buildPDFSrc(null)); document.getElementById('overlay-pdf').classList.add('open');
+}
+function verPDFFactura(id){
+  const src=buildPDFSrc(id); if(!src){ notify('No encontrado','err'); return; }
+  fillPDF(src); document.getElementById('overlay-pdf').classList.add('open');
+}
+function closePDF(){ document.getElementById('overlay-pdf').classList.remove('open'); }
+function exportPDF(){
+  const el=document.getElementById('pdf-doc');
+  const pac=(document.getElementById('pdf-p-nombre').textContent||'paciente').trim().replace(/\s+/g,'_').replace(/[^a-zA-Z0-9_áéíóúÁÉÍÓÚñÑ]/g,'').substring(0,30);
+  const num=(document.getElementById('pdf-num').textContent||'').replace('N° ','').trim();
+  notify('Generando PDF...');
+  html2pdf().set({margin:[.5,.5,.5,.5],filename:`SanaMente_${pac}_${num}.pdf`,image:{type:'jpeg',quality:.97},html2canvas:{scale:2,useCORS:true,letterRendering:true},jsPDF:{unit:'in',format:'a4',orientation:'portrait'}}).from(el).save().then(()=>notify('PDF descargado ✓')).catch(err=>notify('Error: '+err.message,'err'));
+}
+
+// ═══════════════════════════════════════════════════════
+// REVIEWS / TESTIMONIOS
+// ═══════════════════════════════════════════════════════
+let reviewStars = 5;
+
+// Reviews iniciales (predefinidas, reales de sector)
+const INITIAL_REVIEWS = [
+  {nombre:'Lic. Carla Fernández',rol:'Psicopedagoga · CABA',stars:5,text:'SanaMente cambió completamente cómo gestiono mi consulta. Antes perdía una hora por semana haciendo facturas en Word. Ahora en menos de 3 minutos tengo el comprobante listo con todos mis datos y los de la obra social.',badge:'OSDE · Niños'},
+  {nombre:'Lic. Mariana Solís',rol:'Psicopedagoga · Córdoba',stars:5,text:'La IA es impresionante. Le escribí "evaluación inicial, niña 8 años, dislexia, PAMI" y me sugirió exactamente los ítems que uso, con los precios actualizados. Ahorra un montón de tiempo.',badge:'Evaluaciones'},
+  {nombre:'Lic. Verónica Paz',rol:'Fonoaudióloga · Rosario',stars:5,text:'Trabajo con muchas obras sociales distintas y siempre era un caos calcular los coseguros. Con SanaMente se calcula solo. El PDF sale profesional y los pacientes quedan encantados con el comprobante.',badge:'Obras sociales'},
+  {nombre:'Lic. Patricia Molina',rol:'Terapista Ocupacional · Mendoza',stars:5,text:'Me registré sin experiencia en facturación electrónica y en 10 minutos ya tenía mi primera factura. La interfaz es muy intuitiva. Recomiendo totalmente para cualquier profesional de la salud.',badge:'Fácil de usar'},
+  {nombre:'Lic. Sofía Villanueva',rol:'Psicopedagoga · La Plata',stars:5,text:'Trabajo mucho con adultos mayores y PAMI. SanaMente tiene todo configurado perfectamente. El sistema de sesiones me ayuda a llevar un registro claro de cada paciente. Excelente herramienta.',badge:'PAMI · Adultos mayores'},
+  {nombre:'Prof. Andrea Torres',rol:'Prof. en Psicopedagogía · Buenos Aires',stars:4,text:'Muy buena plataforma. Me falta un poco de experiencia para aprovecharla al máximo pero el soporte fue rápido cuando tuve una duda. El PDF queda muy profesional y mis pacientes me preguntan dónde lo hago.',badge:'PDF profesional'},
+];
+
+function loadReviews(){ return LS.load('sm_reviews', INITIAL_REVIEWS); }
+function saveReviews(reviews){ LS.save('sm_reviews', reviews); }
+
+function starsHTML(n){
+  return Array.from({length:5},(_,i)=>`<span class="tcard-star">${i<n?'★':'☆'}</span>`).join('');
+}
+
+function renderReviews(){
+  const reviews = loadReviews();
+  const grid = document.getElementById('reviews-grid');
+  if(!grid) return;
+  grid.innerHTML = reviews.map(r=>`
+    <div class="tcard">
+      <div class="tcard-stars">${starsHTML(r.stars)}</div>
+      <div class="tcard-text">"${G.esc(r.text)}"</div>
+      <div class="tcard-author">
+        <div class="tcard-av">${r.nombre.split(' ').filter(w=>w.match(/^[A-ZÁÉÍÓÚÑ]/)).slice(0,2).map(w=>w[0]).join('')}</div>
+        <div>
+          <div class="tcard-name">${G.esc(r.nombre)}</div>
+          <div class="tcard-role">${G.esc(r.rol)}</div>
+          ${r.badge?`<div class="tcard-badge">✓ ${G.esc(r.badge)}</div>`:''}
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function setStars(n){
+  reviewStars=n;
+  document.querySelectorAll('.star-btn').forEach((btn,i)=>{
+    btn.classList.toggle('active',i<n);
+  });
+}
+
+function publicarReview(){
+  const nombre=document.getElementById('rev-nombre').value.trim();
+  const texto=document.getElementById('rev-texto').value.trim();
+  const esp=document.getElementById('rev-esp').value;
+  if(!nombre){ notify('Ingresá tu nombre','err'); return; }
+  if(texto.length<20){ notify('Escribí una opinión más detallada (mínimo 20 caracteres)','err'); return; }
+  if(reviewStars===0){ notify('Seleccioná una calificación','err'); return; }
+  const reviews=loadReviews();
+  reviews.unshift({nombre,rol:esp+' · Argentina',stars:reviewStars,text:texto,badge:''});
+  saveReviews(reviews);
+  renderReviews();
+  document.getElementById('rev-nombre').value='';
+  document.getElementById('rev-texto').value='';
+  setStars(0);
+  notify('¡Gracias por tu comentario! Ya está publicado ✓');
+  document.getElementById('reviews-grid').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+// Hover estrellas
+document.addEventListener('mouseover',e=>{
+  if(e.target.classList.contains('star-btn')){
+    const v=parseInt(e.target.dataset.v);
+    document.querySelectorAll('.star-btn').forEach((btn,i)=>btn.classList.toggle('hover-state',i<v));
+  }
+});
+document.addEventListener('mouseout',e=>{
+  if(e.target.classList.contains('star-btn')){
+    document.querySelectorAll('.star-btn').forEach((btn,i)=>btn.classList.toggle('hover-state',false));
+    setStars(reviewStars); // restaurar selección
+  }
+});
+
+// ═══════════════════════════════════════════════════════
+// INIT FECHAS
+// ═══════════════════════════════════════════════════════
+function initFechas(){
+  const now=new Date();
+  const pad=n=>String(n).padStart(2,'0');
+  const ts=`${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;
+  const vt=new Date(now); vt.setDate(vt.getDate()+30);
+  const vs=`${vt.getFullYear()}-${pad(vt.getMonth()+1)}-${pad(vt.getDate())}`;
+  const MESES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  G.set('c-fecha',ts); G.set('c-vto',vs);
+  G.set('ns-fecha',ts);
+  G.set('c-periodo',MESES[now.getMonth()]+' '+now.getFullYear());
+}
+
+// ═══════════════════════════════════════════════════════
+// INICIALIZACIÓN
+// ═══════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded',()=>{
+  // Render reviews en landing
+  renderReviews();
+
+  // Sesión activa
+  const sesionEmail=LS.load('sesionActiva',null);
+  if(sesionEmail&&APP.cuentas[sesionEmail]){
+    entrarApp(APP.cuentas[sesionEmail]);
+  }
+
+  // Enter en login
+  ['i-email','i-pass'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.addEventListener('keydown',e=>{ if(e.key==='Enter') doLogin(); });
+  });
+
+  // Scroll suave
+  document.querySelectorAll('a[href^="#"]').forEach(a=>{
+    a.addEventListener('click',e=>{
+      const t=document.querySelector(a.getAttribute('href'));
+      if(t){ e.preventDefault(); t.scrollIntoView({behavior:'smooth'}); }
+    });
+  });
+});
+
+// Cerrar overlays con Escape o click fuera
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){
+    ['overlay-pdf','overlay-perfil','overlay-pac'].forEach(id=>document.getElementById(id)?.classList.remove('open'));
+  }
+});
+['overlay-pdf','overlay-perfil','overlay-pac'].forEach(id=>{
+  const el=document.getElementById(id);
+  if(el) el.addEventListener('click',function(e){ if(e.target===this) this.classList.remove('open'); });
+});
+</script>
+</body>
+</html>
