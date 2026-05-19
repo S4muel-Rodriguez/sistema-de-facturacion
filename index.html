@@ -2,7 +2,10 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0C0C0E">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>SanaMente · Facturación para Psicopedagogas</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
@@ -276,10 +279,23 @@ nav{
 }
 .demo-inner{max-width:1280px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:5rem;align-items:center;}
 .demo-screen{
-  background:rgba(255,255,255,.04);
+  background:rgba(12,12,14,.95);
   border:1px solid rgba(255,255,255,.1);
   border-radius:var(--rl);
   overflow:hidden;
+  height:360px;
+  box-shadow:0 32px 80px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.04);
+  pointer-events:none; /* no es interactivo — es solo visual */
+  user-select:none;
+  position:relative;
+}
+/* Overlay "solo preview" sutil */
+.demo-screen::after{
+  content:'Solo vista de ejemplo';
+  position:absolute;bottom:.75rem;right:.875rem;
+  font-size:9px;color:rgba(255,255,255,.15);
+  letter-spacing:.04em;font-style:italic;
+  pointer-events:none;
 }
 .demo-bar{
   background:rgba(255,255,255,.06);padding:.75rem 1.25rem;
@@ -549,6 +565,9 @@ footer{
 }
 .app-nav:hover{background:var(--cr3);color:var(--ink);}
 .app-nav.active{background:rgba(201,150,74,.12);color:var(--tcl);border-left-color:var(--tc);font-weight:500;}
+.nav-ic{font-size:14px;line-height:1;flex-shrink:0;}
+/* Desktop: hide lbl, show inline text via gap */
+.nav-lbl{display:inline;}
 .nav-ic{font-size:15px;width:18px;text-align:center;}
 .sb-bottom{padding:1.1rem 1.375rem;border-top:1px solid var(--bd);display:flex;flex-direction:column;gap:7px;}
 .btn-perfil{
@@ -624,8 +643,12 @@ footer{
 .ai-add{background:rgba(201,150,74,.15);border:1px solid var(--bdt);color:var(--tcl);border-radius:6px;padding:3px 11px;font-size:11px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;}
 .ai-add:hover{background:var(--tc);color:#fff;border-color:var(--tc);}
 
-/* TABLES */
-.dtbl{width:100%;border-collapse:collapse;font-size:13px;}
+/* DATA TABLE WRAPPERS */
+.dtbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.dtbl-wrap .dtbl{min-width:560px;}
+
+/* APP PAGE BASE */
+#page-app{display:flex;flex-direction:row;min-height:100vh;}
 .dtbl th{text-align:left;padding:9px 12px;font-size:10px;font-weight:500;color:var(--ink4);border-bottom:1px solid var(--bd);text-transform:uppercase;letter-spacing:.05em;}
 .dtbl td{padding:11px 12px;border-bottom:1px solid var(--bd);color:var(--ink);}
 .dtbl tr:hover td{background:var(--cr3);}
@@ -730,7 +753,14 @@ footer{
 /* SEC ANCHOR */
 .sec-anchor{display:block;height:0;pointer-events:none;}
 
-/* RESPONSIVE TOUCH */
+/* Seguridad: page-app nunca visible sin clase .active */
+#page-app:not(.active){display:none!important;}
+/* page-landing y page-login solo visibles con .active */
+#page-landing:not(.active),#page-login:not(.active){display:none!important;}
+
+/* ══════════════════════════════════════════
+   TABLET GRANDE (≤1100px)
+══════════════════════════════════════════ */
 @media (max-width:1100px){
   .hero-visual{display:none;}
   nav{padding:1rem 2rem;}
@@ -742,7 +772,282 @@ footer{
   .steps{grid-template-columns:1fr 1fr;}
   .steps::before{display:none;}
   .testimonials-grid{grid-template-columns:1fr 1fr;}
-  footer{padding:1.5rem 2rem;}
+  footer{padding:1.5rem 2rem;flex-wrap:wrap;gap:.75rem;}
+  .app-sidebar{width:200px;}
+  .dash-stats{grid-template-columns:1fr 1fr;}
+  .g3{grid-template-columns:1fr 1fr;}
+  .demo-inner{grid-template-columns:1fr;}
+  .demo-screen{height:300px;}
+}
+
+/* ══════════════════════════════════════════
+   TABLET (≤900px)
+══════════════════════════════════════════ */
+@media (max-width:900px){
+  .feat-grid{grid-template-columns:1fr;}
+  .steps{grid-template-columns:1fr;}
+  .testimonials-grid{grid-template-columns:1fr 1fr;}
+  .app-sidebar{width:180px;}
+}
+
+/* ══════════════════════════════════════════════════════
+   MOBILE ≤768px
+   iPhone 14/15/16 Pro Max 430px · Plus 428px
+   Galaxy S24 Ultra 412px · Pixel 8 412px
+══════════════════════════════════════════════════════ */
+@media (max-width:768px){
+
+  /* ── NAV ── */
+  nav{ padding:.75rem 1rem; }
+  .nav-links a:not(.btn-nav){display:none;}
+  .btn-nav{padding:7px 14px;font-size:13px;}
+
+  /* ── HERO ── */
+  .hero{ padding:4.75rem 1.125rem 2.5rem; min-height:auto; flex-direction:column; }
+  .hero-visual{display:none;}
+  .hero-content{max-width:100%;text-align:center;}
+  .hero h1{ font-size:clamp(1.7rem,7vw,2.75rem); line-height:1.18; margin-bottom:1rem; }
+  .hero h1 em{display:block;}
+  .hero p{font-size:clamp(14px,3.8vw,16px);margin-bottom:1.75rem;line-height:1.65;}
+  .hero-badge{font-size:10px;padding:5px 12px;margin-bottom:1.5rem;}
+  .hero-actions{ flex-direction:column; gap:.625rem; align-items:stretch; width:100%; }
+  .hero-actions .btn-p,.hero-actions .btn-s{
+    width:100%; justify-content:center; padding:13px 16px; font-size:14px;
+  }
+  .hero-trust{ justify-content:center; flex-wrap:wrap; gap:.625rem; margin-top:1.75rem; }
+
+  /* ── STATS ── */
+  .stats-bar{ flex-wrap:wrap; gap:1.25rem 2rem; padding:1.5rem 1.125rem; justify-content:center; }
+  .stat-div{display:none;}
+  .stat{text-align:center;min-width:110px;}
+  .stat-n{font-size:clamp(1.25rem,5vw,1.6rem);}
+  .stat-l{font-size:10px;}
+
+  /* ── SECTIONS ── */
+  .section,.how-section,.spec-section,.demo-section,.testimonials-section{
+    padding:clamp(2.25rem,7vw,3.5rem) 1.125rem;
+  }
+  .sec-title{ font-size:clamp(1.45rem,5.5vw,2.1rem); line-height:1.2; }
+  .sec-sub{font-size:clamp(13px,3.5vw,15px);}
+  .sec-eye{font-size:10px;}
+
+  /* ── FEAT ── */
+  .feat-grid{grid-template-columns:1fr;gap:.875rem;}
+  .feat{padding:1.25rem 1.125rem;}
+  .feat-ic{width:38px;height:38px;font-size:17px;margin-bottom:.75rem;}
+  .feat-title{font-size:14px;}
+  .feat-desc{font-size:13px;}
+
+  /* ── SPEC ── */
+  .spec-inner{grid-template-columns:1fr;}
+  .spec-cards{grid-template-columns:1fr;}
+  .spec-card{padding:1.125rem;}
+
+  /* ── STEPS ── */
+  .steps{ grid-template-columns:1fr; gap:1.125rem; }
+  .steps::before{display:none;}
+  .step{ text-align:left; display:flex; gap:.875rem; align-items:flex-start; }
+  .step-n{ margin:0; flex-shrink:0; width:40px; height:40px; font-size:1.1rem; }
+
+  /* ── DEMO — solo mockup visual, no interactivo ── */
+  .demo-inner{ grid-template-columns:1fr; gap:1.75rem; display:flex; flex-direction:column; }
+  .demo-screen{
+    width:100%; height:clamp(200px,52vw,280px);
+    pointer-events:none; user-select:none;
+  }
+  /* Ocultar sidebar del mockup para que el contenido quepa en mobile */
+  .demo-screen > div > div:first-child{ display:none!important; }
+
+  /* ── TESTIMONIOS ── */
+  .testimonials-grid{grid-template-columns:1fr;gap:.875rem;}
+  .tcard{padding:1.25rem;}
+  .add-review-card{padding:1.125rem;}
+  .review-form{grid-template-columns:1fr;}
+  /* evitar zoom iOS en inputs */
+  .rf-field input,.rf-field textarea,.rf-field select{font-size:16px;}
+
+  /* ── CTA ── */
+  .cta-box{ padding:clamp(1.75rem,6vw,2.75rem) 1.125rem; border-radius:14px; }
+  .cta-box .btn-p{ width:100%; justify-content:center; font-size:14px; }
+
+  /* ── FOOTER ── */
+  footer{ flex-direction:column; align-items:center; gap:.75rem; padding:1.25rem 1.125rem; text-align:center; }
+  .footer-links{ flex-wrap:wrap; justify-content:center; gap:.375rem 1rem; }
+
+  /* ── LOGIN ── */
+  .login-left{display:none;}
+  .login-right{
+    width:100%; border-left:none;
+    padding:clamp(1.5rem,6vw,2.25rem) clamp(.875rem,4vw,1.25rem);
+    min-height:100svh;
+    justify-content:flex-start;
+    padding-top:clamp(1.75rem,7vw,2.5rem);
+  }
+  .lbox{width:100%;max-width:100%;}
+  .lf-row{grid-template-columns:1fr;gap:.625rem;}
+  .login-title{font-size:clamp(1.4rem,5.5vw,1.85rem);}
+  /* font-size 16px evita zoom automático en iOS */
+  .lf input,.lf select{font-size:16px;padding:12px 13px;}
+  .btn-submit{padding:13px;font-size:15px;}
+  .foto-upload-area{padding:1.125rem;}
+
+  /* ── MODALES ── */
+  .modal{
+    width:calc(100vw - 1.5rem)!important;
+    max-height:92svh;
+    border-radius:14px;
+  }
+  .modal-hdr{padding:1.125rem 1.125rem .75rem;}
+  .modal-body{padding:1.125rem;}
+  .modal-footer{padding:.75rem 1.125rem 1.125rem;flex-wrap:wrap;gap:.5rem;}
+  .modal-footer .bsm{flex:1;justify-content:center;text-align:center;}
+  .modal .g2{grid-template-columns:1fr;}
+
+  /* ══ APP ══════════════════════════════════ */
+  #page-app{flex-direction:column;}
+
+  /* Sidebar → bottom navigation bar */
+  .app-sidebar{
+    width:100%;
+    flex-direction:row; align-items:stretch;
+    position:fixed; bottom:0; left:0; right:0; top:auto;
+    z-index:50; border-right:none; border-top:1px solid var(--bd); padding:0;
+    background:rgba(13,13,16,.97);
+    backdrop-filter:blur(24px) saturate(1.8);
+    -webkit-backdrop-filter:blur(24px) saturate(1.8);
+    /* iPhone safe area (home indicator) */
+    height:calc(56px + env(safe-area-inset-bottom,0px));
+  }
+  .sb-logo,.sb-section-lbl,.sb-bottom,.sb-user,.sb-nav .sb-sec{display:none!important;}
+  .sb-nav{
+    display:flex!important; flex-direction:row!important;
+    width:100%; align-items:stretch;
+    padding:0!important; padding-bottom:env(safe-area-inset-bottom,0px)!important;
+  }
+  .app-nav{
+    flex:1; flex-direction:column; justify-content:center; align-items:center;
+    gap:2px; padding:6px 2px; height:100%; min-width:0;
+    border-left:none!important; border-top:2px solid transparent;
+    border-radius:0!important; margin:0!important; font-size:9px;
+  }
+  .app-nav .nav-ic{font-size:19px;line-height:1.15;}
+  .app-nav span.nav-lbl{
+    display:block; font-size:9px; line-height:1;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    max-width:52px; text-align:center;
+  }
+  .app-nav.active{
+    background:rgba(201,150,74,.1)!important; color:var(--tcl)!important;
+    border-top-color:var(--tc)!important; border-left-color:transparent!important;
+  }
+
+  /* Main */
+  .app-main{
+    width:100%; flex:1;
+    padding-bottom:calc(56px + env(safe-area-inset-bottom,0px));
+  }
+
+  /* Topbar */
+  .app-topbar{padding:.75rem 1rem;position:sticky;top:0;z-index:30;}
+  .tb-title{font-size:clamp(1rem,4.5vw,1.2rem);}
+  .tb-actions .bsm span{display:none;}
+  .tb-actions .bsm{padding:6px 10px;min-width:34px;justify-content:center;font-size:16px;}
+
+  /* Content */
+  .app-content{padding:.875rem;padding-bottom:.5rem;}
+
+  /* Cards + Grids */
+  .acard{padding:1rem;border-radius:12px;}
+  .acard-title{font-size:9px;margin-bottom:.875rem;}
+  .g2,.g3{grid-template-columns:1fr;}
+  .dash-stats{grid-template-columns:1fr 1fr;gap:.625rem;margin-bottom:.875rem;}
+  .dstat{padding:.875rem;}
+  .dstat-v{font-size:clamp(1.2rem,5vw,1.6rem);}
+  .dstat-l{font-size:9px;}
+
+  /* Inputs evitar zoom iOS */
+  .ff input,.ff select,.ff textarea{font-size:16px;}
+  .ai-ctx{font-size:16px;}
+
+  /* Tables scroll */
+  .itbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  .itbl{min-width:480px;}
+  .dtbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  .dtbl-wrap .dtbl{min-width:500px;}
+  #dash-tbl{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  #dash-tbl .dtbl{min-width:460px;}
+
+  /* Totals + AI */
+  .totals-box{align-items:stretch;}
+  .trow{min-width:0;width:100%;}
+  .ai-wrap{padding:.875rem;}
+  .ai-sug{flex-wrap:wrap;gap:6px;}
+
+  /* Notif sobre bottom nav */
+  .notif{bottom:calc(66px + env(safe-area-inset-bottom,0px));}
+
+  /* PDF modal */
+  #pdf-doc{padding:.875rem .875rem 0;}
+  .pdf-hdr{flex-direction:column;gap:.625rem;padding-bottom:.875rem;margin-bottom:.875rem;}
+  .pdf-type{text-align:left;font-size:1.35rem;}
+  .pdf-meta{grid-template-columns:1fr;}
+  .pdf-totals{align-items:stretch;}
+  .pdf-tr{min-width:0;width:100%;}
+  .pdf-tbl{font-size:10px;}
+  .pac-item{padding:.625rem;}
+  .btn-tbl{padding:4px 7px;font-size:10px;}
+
+  /* Search */
+  .search-wrap{width:100%;}
+  .search-wrap input[id^="search"]{width:100%!important;}
+}
+
+/* ══════════════════════════════════════════════════════
+   MOBILE CHICO ≤375px
+   iPhone SE 3ª gen · iPhone 13 mini · Galaxy A25
+══════════════════════════════════════════════════════ */
+@media (max-width:375px){
+  nav{padding:.625rem .875rem;}
+  .hero{padding:4.25rem .875rem 2rem;}
+  .hero h1{font-size:1.6rem;}
+  .hero p{font-size:13px;}
+  .section,.how-section,.spec-section,.demo-section,.testimonials-section{
+    padding:2rem .875rem;
+  }
+  .login-right{padding:1.5rem .875rem;}
+  .dash-stats{grid-template-columns:1fr 1fr;}
+  .dstat-v{font-size:1.15rem;}
+  .app-nav span.nav-lbl{font-size:8px;max-width:44px;}
+  .app-topbar{padding:.625rem .875rem;}
+  .app-content{padding:.75rem;}
+  .acard{padding:.875rem;}
+  .modal{width:calc(100vw - 1rem)!important;}
+  .demo-screen{height:180px;}
+}
+
+/* ══════════════════════════════════════════════════════
+   MOBILE MUY CHICO ≤320px
+   iPhone SE 1ª/2ª gen · pantallas antiguas
+══════════════════════════════════════════════════════ */
+@media (max-width:320px){
+  html{font-size:13px;}
+  nav{padding:.6rem .75rem;}
+  .hero h1{font-size:1.4rem;}
+  .btn-nav{padding:6px 10px;font-size:12px;}
+  .section,.how-section,.spec-section,.demo-section,.testimonials-section{
+    padding:1.75rem .75rem;
+  }
+  .app-sidebar{height:calc(52px + env(safe-area-inset-bottom,0px));}
+  .app-main{padding-bottom:calc(52px + env(safe-area-inset-bottom,0px));}
+  .app-nav .nav-ic{font-size:16px;}
+  .app-nav span.nav-lbl{display:none;}
+  .dash-stats{grid-template-columns:1fr;}
+  .app-content{padding:.5rem;}
+  .acard{padding:.625rem;border-radius:10px;}
+  .demo-screen{height:160px;}
+  .modal{width:calc(100vw - .75rem)!important;}
+  .login-right{padding:1.25rem .75rem;}
+  .notif{font-size:12px;padding:9px 14px;}
 }
 </style>
 </head>
@@ -751,7 +1056,7 @@ footer{
 <!-- ═══════════════════════════════════════════
      LANDING PAGE
 ════════════════════════════════════════════ -->
-<div id="page-landing" class="page active">
+<div id="page-landing" class="page">
 
 <nav>
   <div class="nav-logo" onclick="gotoLanding()">
@@ -981,28 +1286,99 @@ footer{
         <button class="btn-p" onclick="gotoLogin('registro')">Probarlo ahora →</button>
       </div>
     </div>
-    <div class="demo-screen">
+    <div class="demo-screen" style="height:auto;min-height:unset;overflow:hidden;border-radius:var(--rl);box-shadow:0 32px 80px rgba(0,0,0,.7),0 0 0 1px rgba(255,255,255,.06);pointer-events:none;user-select:none;position:relative;">
+      <!-- Barra de título estilo browser -->
       <div class="demo-bar">
         <div class="demo-dot" style="background:#FF5F57;"></div>
         <div class="demo-dot" style="background:#FEBC2E;"></div>
         <div class="demo-dot" style="background:#28C840;"></div>
         <span style="font-size:11px;color:rgba(255,255,255,.25);margin-left:8px;">SanaMente · Nueva factura</span>
+        <span style="margin-left:auto;font-size:10px;color:rgba(255,255,255,.18);font-style:italic;">vista de ejemplo</span>
       </div>
-      <div class="demo-body">
-        <div class="demo-label">Paciente cargado</div>
-        <div class="demo-patient">
-          <div class="demo-pname">Lucía M. · Niña 7 años</div>
-          <div class="demo-psub">OSDE · Afiliada N° 987654321-00 · Tutora: Ana Martínez</div>
-        </div>
-        <div class="demo-label">Ítems sugeridos por IA ✦</div>
-        <div class="demo-row"><span>Evaluación psicopedagógica inicial (60 min)</span><span style="color:var(--tcl);">$18.500</span></div>
-        <div class="demo-row"><span>Informe psicopedagógico escrito</span><span style="color:var(--tcl);">$15.000</span></div>
-        <div class="demo-row"><span>Devolución diagnóstica</span><span style="color:var(--tcl);">$10.500</span></div>
-        <div class="demo-row"><span>Total · IVA exento (salud)</span><span>$44.000</span></div>
-        <div style="margin-top:1rem;background:rgba(122,158,135,.12);border-radius:8px;padding:.75rem;font-size:12px;color:rgba(255,255,255,.45);">
-          Coseguro OSDE 20%: $8.800 · Resta a cobrar: $35.200
+      <!-- Capturas reales apiladas -->
+      <img src="Captura_de_pantalla_2026-05-15_171631.png"
+           alt="Pantalla de nueva factura — datos del profesional y paciente"
+           style="width:100%;display:block;border-bottom:1px solid rgba(255,255,255,.05);"
+           onerror="this.style.display='none'">
+      <img src="Captura_de_pantalla_2026-05-15_171643.png"
+           alt="Pantalla de nueva factura — sesiones e ítems a facturar"
+           style="width:100%;display:block;"
+           onerror="this.style.display='none'">
+      <!-- Fallback si las imágenes no cargan: mockup HTML estático -->
+      <div id="demo-fallback" style="display:none;background:rgba(12,12,14,.95);padding:1.5rem;">
+        <div style="display:flex;height:300px;">
+          <div style="width:130px;flex-shrink:0;background:rgba(19,19,22,.9);border-right:1px solid rgba(255,255,255,.06);padding:1rem 0;display:flex;flex-direction:column;gap:2px;">
+            <div style="padding:.5rem 1rem;margin-bottom:.5rem;">
+              <div style="display:flex;align-items:center;gap:7px;">
+                <div style="width:22px;height:22px;background:linear-gradient(135deg,#C9964A,#A87838);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;font-family:'Cormorant Garamond',serif;font-weight:600;">S</div>
+                <span style="font-family:'Cormorant Garamond',serif;font-size:12px;color:#F0EDE8;font-weight:600;">SanaMente</span>
+              </div>
+            </div>
+            <div style="padding:.35rem 1rem;background:rgba(201,150,74,.12);border-left:2px solid #C9964A;margin-right:.4rem;border-radius:0 5px 5px 0;">
+              <span style="font-size:10.5px;color:#E0B870;font-weight:500;">✦ Nueva</span>
+            </div>
+            <div style="padding:.35rem 1rem;"><span style="font-size:10.5px;color:rgba(255,255,255,.28);">◈ Dashboard</span></div>
+            <div style="padding:.35rem 1rem;"><span style="font-size:10.5px;color:rgba(255,255,255,.28);">≡ Facturas</span></div>
+            <div style="margin-top:.5rem;padding:.25rem 1rem;"><span style="font-size:8.5px;color:rgba(255,255,255,.18);letter-spacing:.06em;text-transform:uppercase;">Gestión</span></div>
+            <div style="padding:.35rem 1rem;"><span style="font-size:10.5px;color:rgba(255,255,255,.28);">👤 Pacientes</span></div>
+            <div style="padding:.35rem 1rem;"><span style="font-size:10.5px;color:rgba(255,255,255,.28);">📋 Sesiones</span></div>
+          </div>
+          <div style="flex:1;overflow:hidden;padding:.875rem;display:flex;flex-direction:column;gap:.625rem;">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:.45rem .7rem;background:rgba(26,26,31,.8);border-radius:7px;border:1px solid rgba(255,255,255,.06);">
+              <span style="font-family:'Cormorant Garamond',serif;font-size:14px;color:#F0EDE8;">Nueva factura</span>
+              <div style="display:flex;gap:5px;">
+                <div style="padding:3px 9px;border:1px solid rgba(255,255,255,.1);border-radius:5px;font-size:9.5px;color:rgba(255,255,255,.35);">PDF</div>
+                <div style="padding:3px 9px;background:linear-gradient(135deg,#C9964A,#A87838);border-radius:5px;font-size:9.5px;color:#fff;">Guardar</div>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;flex-shrink:0;">
+              <div style="background:rgba(26,26,31,.6);border:1px solid rgba(255,255,255,.06);border-radius:7px;padding:.625rem;">
+                <div style="font-size:7.5px;color:rgba(255,255,255,.22);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.35rem;">Profesional</div>
+                <div style="font-size:9.5px;color:rgba(255,255,255,.65);margin-bottom:.25rem;padding:3px 6px;background:rgba(255,255,255,.04);border-radius:4px;border:1px solid rgba(255,255,255,.05);">Lic. en Psicopedagogía · M.N. 12345</div>
+                <div style="font-size:8.5px;color:rgba(255,255,255,.3);padding:2px 6px;background:rgba(255,255,255,.03);border-radius:4px;border:1px solid rgba(255,255,255,.04);">CUIT 27-12345678-9 · Monotributista</div>
+              </div>
+              <div style="background:rgba(26,26,31,.6);border:1px solid rgba(255,255,255,.06);border-radius:7px;padding:.625rem;">
+                <div style="font-size:7.5px;color:rgba(255,255,255,.22);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.35rem;">Paciente</div>
+                <div style="font-size:9.5px;color:rgba(255,255,255,.65);margin-bottom:.25rem;padding:3px 6px;background:rgba(107,158,122,.1);border-radius:4px;border:1px solid rgba(107,158,122,.18);">Lucía M. · Niña 7 años · OSDE</div>
+                <div style="font-size:8.5px;color:rgba(255,255,255,.3);padding:2px 6px;background:rgba(255,255,255,.03);border-radius:4px;border:1px solid rgba(255,255,255,.04);">Afiliada N° 987654321-00</div>
+              </div>
+            </div>
+            <div style="background:rgba(26,26,31,.6);border:1px solid rgba(255,255,255,.06);border-radius:7px;padding:.625rem;flex:1;">
+              <div style="font-size:7.5px;color:rgba(255,255,255,.22);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.5rem;">Sesiones e ítems · IA ✦</div>
+              <div style="display:flex;justify-content:space-between;padding:.3rem 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:9.5px;">
+                <span style="color:rgba(255,255,255,.55);">Evaluación psicopedagógica (60 min)</span>
+                <span style="color:#E0B870;">$18.500</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;padding:.3rem 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:9.5px;">
+                <span style="color:rgba(255,255,255,.55);">Informe psicopedagógico escrito</span>
+                <span style="color:#E0B870;">$15.000</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;padding:.3rem 0;font-size:10px;font-weight:500;font-family:'Cormorant Garamond',serif;">
+                <span style="color:rgba(255,255,255,.45);">Total · IVA exento</span>
+                <span style="color:#F0EDE8;">$33.500</span>
+              </div>
+              <div style="margin-top:.4rem;display:inline-flex;align-items:center;gap:4px;background:rgba(201,150,74,.1);border:1px solid rgba(201,150,74,.22);border-radius:20px;padding:2px 8px;">
+                <span style="font-size:8.5px;color:#E0B870;">✦ Sugerido por IA en 2 seg</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
+      <script>
+        // Si ambas imágenes fallan, mostrar fallback
+        (function(){
+          var imgs = document.querySelectorAll('.demo-screen img');
+          var failed = 0;
+          imgs.forEach(function(img){
+            img.addEventListener('error', function(){
+              failed++;
+              if(failed === imgs.length){
+                document.getElementById('demo-fallback').style.display = 'block';
+              }
+            });
+          });
+        })();
+      </script>
     </div>
   </div>
 </div>
@@ -1098,7 +1474,7 @@ footer{
 <div id="page-login" class="page">
   <div class="login-left">
     <div class="ll-bg1"></div><div class="ll-bg2"></div><div class="ll-pat"></div>
-    <button class="ll-back" onclick="gotoLanding()">← Volver</button>
+    <button class="ll-back" onclick="gotoLanding()">← Conocer SanaMente</button>
     <div class="ll-c">
       <div class="ll-logo">
         <div class="ll-lm">S</div>
@@ -1184,6 +1560,11 @@ footer{
         <button class="btn-submit" onclick="doRegistro()">Crear mi perfil y entrar →</button>
         <p class="login-terms">Al registrarte aceptás los <a href="#">Términos</a> y la <a href="#">Política de privacidad</a>.</p>
       </div>
+      <!-- Link a landing page -->
+      <p style="text-align:center;margin-top:1.5rem;font-size:12px;color:var(--ink4);">
+        ¿Querés conocer la plataforma primero?
+        <a onclick="gotoLanding()" style="color:var(--tcl);cursor:pointer;font-weight:500;"> Ver SanaMente →</a>
+      </p>
     </div>
   </div>
 </div>
@@ -1208,13 +1589,13 @@ footer{
     </div>
     <div class="sb-nav">
       <div class="sb-sec">Facturación</div>
-      <div class="app-nav active" onclick="showView('nueva')"><span class="nav-ic">✦</span>Nueva factura</div>
-      <div class="app-nav" onclick="showView('dashboard')"><span class="nav-ic">◈</span>Dashboard</div>
-      <div class="app-nav" onclick="showView('facturas')"><span class="nav-ic">≡</span>Comprobantes</div>
+      <div class="app-nav active" onclick="showView('nueva')"><span class="nav-ic">✦</span><span class="nav-lbl">Nueva</span></div>
+      <div class="app-nav" onclick="showView('dashboard')"><span class="nav-ic">◈</span><span class="nav-lbl">Dashboard</span></div>
+      <div class="app-nav" onclick="showView('facturas')"><span class="nav-ic">≡</span><span class="nav-lbl">Facturas</span></div>
       <div class="sb-sec" style="margin-top:8px;">Gestión</div>
-      <div class="app-nav" onclick="showView('pacientes')"><span class="nav-ic">👤</span>Pacientes</div>
-      <div class="app-nav" onclick="showView('sesiones')"><span class="nav-ic">📋</span>Sesiones</div>
-      <div class="app-nav" onclick="showView('aranceles')"><span class="nav-ic">▣</span>Aranceles</div>
+      <div class="app-nav" onclick="showView('pacientes')"><span class="nav-ic">👤</span><span class="nav-lbl">Pacientes</span></div>
+      <div class="app-nav" onclick="showView('sesiones')"><span class="nav-ic">📋</span><span class="nav-lbl">Sesiones</span></div>
+      <div class="app-nav" onclick="showView('aranceles')"><span class="nav-ic">▣</span><span class="nav-lbl">Aranceles</span></div>
     </div>
     <div class="sb-bottom">
       <button class="btn-perfil" onclick="openPerfil()">✎ Editar perfil</button>
@@ -1226,9 +1607,15 @@ footer{
     <div class="app-topbar">
       <div class="tb-title" id="app-title">Nueva factura</div>
       <div class="tb-actions" id="tb-actions">
-        <button class="bsm bsm-outline" onclick="openPDF()">Vista previa PDF</button>
-        <button class="bsm bsm-tc" onclick="guardarFactura()">Guardar comprobante</button>
+        <button class="bsm bsm-outline" onclick="openPDF()"><span>Vista previa PDF</span></button>
+        <button class="bsm bsm-tc" onclick="guardarFactura()"><span>Guardar comprobante</span></button>
+        <button class="bsm bsm-outline tb-menu-btn" onclick="toggleMobileMenu()" title="Menú" style="display:none;">☰</button>
       </div>
+    </div>
+    <!-- Mobile menu dropdown -->
+    <div id="mobile-menu" style="display:none;position:absolute;top:58px;right:0;left:0;z-index:40;background:var(--cr2);border-bottom:1px solid var(--bd);padding:.875rem 1.25rem;flex-direction:column;gap:.5rem;">
+      <button class="btn-perfil" onclick="openPerfil();toggleMobileMenu()">✎ Editar perfil</button>
+      <button class="btn-logout" onclick="doLogout()">Cerrar sesión</button>
     </div>
     <div class="app-content">
 
@@ -1287,6 +1674,7 @@ footer{
 
         <div class="acard">
           <div class="acard-title">Sesiones e ítems a facturar</div>
+          <div class="itbl-wrap">
           <table class="itbl">
             <thead><tr>
               <th style="width:42%;">Descripción de la prestación</th>
@@ -1298,6 +1686,7 @@ footer{
             </tr></thead>
             <tbody id="items-body"></tbody>
           </table>
+          </div>
           <div style="display:flex;gap:9px;margin-top:1rem;flex-wrap:wrap;align-items:center;">
             <button class="bsm bsm-outline" onclick="addItem()">+ Agregar ítem</button>
             <button class="bsm bsm-outline" onclick="showView('aranceles');notify('Hacé clic en Usar para agregar')">▣ Desde aranceles</button>
@@ -1363,7 +1752,7 @@ footer{
       <!-- FACTURAS -->
       <div id="view-facturas" style="display:none;">
         <div class="acard">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.125rem;">
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem;margin-bottom:1.125rem;">
             <div class="acard-title" style="margin:0;">Todos los comprobantes</div>
             <div class="search-wrap">
               <span class="search-ic">🔍</span>
@@ -1371,14 +1760,14 @@ footer{
                 style="padding:7px 12px 7px 30px;border:1px solid var(--bd);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:12px;background:var(--cr3);color:var(--ink);outline:none;transition:all .2s;width:220px;">
             </div>
           </div>
-          <div id="f-tbl"></div>
+          <div class="dtbl-wrap"><div id="f-tbl"></div></div>
         </div>
       </div>
 
       <!-- PACIENTES -->
       <div id="view-pacientes" style="display:none;">
         <div class="acard">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.125rem;">
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem;margin-bottom:1.125rem;">
             <div class="acard-title" style="margin:0;">Pacientes registrados</div>
             <div class="search-wrap">
               <span class="search-ic">🔍</span>
@@ -1386,7 +1775,7 @@ footer{
                 style="padding:7px 12px 7px 30px;border:1px solid var(--bd);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:12px;background:var(--cr3);color:var(--ink);outline:none;transition:all .2s;width:220px;">
             </div>
           </div>
-          <div id="pac-tbl"></div>
+          <div class="dtbl-wrap"><div id="pac-tbl"></div></div>
           <div style="margin-top:1.5rem;padding-top:1.5rem;border-top:1px solid var(--bd);">
             <div style="font-size:11px;font-weight:500;color:var(--ink2);margin-bottom:1rem;letter-spacing:.05em;text-transform:uppercase;">Agregar nuevo paciente</div>
             <div class="g3">
@@ -1408,7 +1797,7 @@ footer{
       <div id="view-sesiones" style="display:none;">
         <div class="acard">
           <div class="acard-title">Registro de sesiones</div>
-          <div id="ses-tbl"></div>
+          <div class="dtbl-wrap"><div id="ses-tbl"></div></div>
           <div style="margin-top:1.5rem;padding-top:1.5rem;border-top:1px solid var(--bd);">
             <div style="font-size:11px;font-weight:500;color:var(--ink2);margin-bottom:1rem;letter-spacing:.05em;text-transform:uppercase;">Registrar sesión</div>
             <div class="g3">
@@ -1436,7 +1825,7 @@ footer{
       <div id="view-aranceles" style="display:none;">
         <div class="acard">
           <div class="acard-title">Aranceles y prestaciones</div>
-          <div id="ar-tbl"></div>
+          <div class="dtbl-wrap"><div id="ar-tbl"></div></div>
           <div style="margin-top:1.5rem;padding-top:1.5rem;border-top:1px solid var(--bd);">
             <div style="font-size:11px;font-weight:500;color:var(--ink2);margin-bottom:1rem;letter-spacing:.05em;text-transform:uppercase;">Agregar arancel</div>
             <div class="g2">
@@ -1661,8 +2050,13 @@ function clearErr(id){ const el=document.getElementById(id); if(el){el.textConte
 // PÁGINAS
 // ═══════════════════════════════════════════════════════
 function setActivePage(id){
+  // Guard: no se puede acceder a la app sin sesión activa
+  if(id === 'page-app' && !APP.usuario){
+    id = 'page-login';
+  }
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.getElementById(id).classList.add('active');
+  window.scrollTo({top:0,behavior:'instant'});
 }
 function gotoLanding(){ setActivePage('page-landing'); window.scrollTo({top:0,behavior:'smooth'}); }
 function gotoLogin(tab){ setActivePage('page-login'); switchTab(tab||'ingreso'); }
@@ -1782,7 +2176,8 @@ function doLogout(){
   guardarDatosUsuario();
   APP.usuario=null; APP.items=[];
   LS.del('sesionActiva');
-  gotoLanding();
+  gotoLogin('ingreso');
+  notify('Sesión cerrada correctamente');
 }
 
 // ═══════════════════════════════════════════════════════
@@ -2400,10 +2795,13 @@ document.addEventListener('DOMContentLoaded',()=>{
   // Render reviews en landing
   renderReviews();
 
-  // Sesión activa
+  // Sesión activa → app directo; sin sesión → login
   const sesionEmail=LS.load('sesionActiva',null);
   if(sesionEmail&&APP.cuentas[sesionEmail]){
     entrarApp(APP.cuentas[sesionEmail]);
+  } else {
+    setActivePage('page-login');
+    switchTab('ingreso');
   }
 
   // Enter en login
@@ -2425,11 +2823,53 @@ document.addEventListener('DOMContentLoaded',()=>{
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape'){
     ['overlay-pdf','overlay-perfil','overlay-pac'].forEach(id=>document.getElementById(id)?.classList.remove('open'));
+    closeMobileMenu();
   }
 });
 ['overlay-pdf','overlay-perfil','overlay-pac'].forEach(id=>{
   const el=document.getElementById(id);
   if(el) el.addEventListener('click',function(e){ if(e.target===this) this.classList.remove('open'); });
+});
+
+// ══════════════════════════════════════════
+// MOBILE HELPERS
+// ══════════════════════════════════════════
+let _mobileMenuOpen = false;
+
+function toggleMobileMenu(){
+  _mobileMenuOpen = !_mobileMenuOpen;
+  const m = document.getElementById('mobile-menu');
+  if(m) m.style.display = _mobileMenuOpen ? 'flex' : 'none';
+}
+function closeMobileMenu(){
+  _mobileMenuOpen = false;
+  const m = document.getElementById('mobile-menu');
+  if(m) m.style.display = 'none';
+}
+
+// Show/hide mobile menu button based on screen size
+function handleResize(){
+  const isMobile = window.innerWidth <= 768;
+  const menuBtn = document.querySelector('.tb-menu-btn');
+  // PDF and save buttons: hide text on mobile, show icons only
+  document.querySelectorAll('.tb-actions .bsm:not(.tb-menu-btn) span').forEach(s=>{
+    s.style.display = isMobile ? 'none' : '';
+  });
+  if(menuBtn) menuBtn.style.display = isMobile ? '' : 'none';
+  if(!isMobile) closeMobileMenu();
+}
+window.addEventListener('resize', handleResize);
+handleResize();
+
+// Close mobile menu when tapping outside
+document.addEventListener('click', e=>{
+  if(_mobileMenuOpen){
+    const menu = document.getElementById('mobile-menu');
+    const btn = document.querySelector('.tb-menu-btn');
+    if(menu && btn && !menu.contains(e.target) && !btn.contains(e.target)){
+      closeMobileMenu();
+    }
+  }
 });
 </script>
 </body>
