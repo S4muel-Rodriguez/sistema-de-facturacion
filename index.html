@@ -1695,10 +1695,18 @@ footer{
           </div>
           <div id="ai-panel" style="display:none;">
             <div class="ai-wrap">
-              <div class="ai-hdr"><span class="ai-ttl">✦ Asistente IA — Psicopedagogía</span><span class="ai-sp" id="ai-sp"></span></div>
-              <input class="ai-ctx" id="ai-ctx" placeholder="Describí la sesión: ej. 'evaluación inicial niño 7 años dislexia, OSDE', 'seguimiento adulto TDA/H particular'...">
-              <div style="display:flex;gap:9px;margin-bottom:.875rem;">
-                <button class="bsm bsm-tc" onclick="runAI()">Generar sugerencias →</button>
+              <div class="ai-hdr">
+                <span class="ai-ttl">✦ Asistente IA — Psicopedagogía</span>
+                <span class="ai-sp" id="ai-sp"></span>
+              </div>
+              <div id="ai-ctx-hint" style="font-size:11px;color:var(--ink4);margin-bottom:.5rem;line-height:1.5;">
+                Usará: <span id="ai-ctx-pac" style="color:var(--ink3);">paciente del formulario</span> · <span id="ai-ctx-os" style="color:var(--ink3);">obra social</span> · <span style="color:var(--ink3);">tus aranceles</span>
+              </div>
+              <input class="ai-ctx" id="ai-ctx"
+                placeholder="Contexto clínico (opcional): ej. 'dislexia y déficit atencional', 'evaluación inicial', 'seguimiento TDA/H'..."
+                onkeydown="if(event.key==='Enter'){event.preventDefault();runAI();}">
+              <div style="display:flex;gap:9px;margin-bottom:.875rem;flex-wrap:wrap;">
+                <button class="bsm bsm-tc" onclick="runAI()">✦ Generar sugerencias →</button>
                 <button class="bsm bsm-outline" onclick="document.getElementById('ai-panel').style.display='none'">Cerrar</button>
               </div>
               <div id="ai-sugs"></div>
@@ -1967,12 +1975,54 @@ footer{
 
 <script>
 // ═══════════════════════════════════════════════════════
-// PERSISTENCIA — localStorage
+// PERSISTENCIA — localStorage robusto
 // ═══════════════════════════════════════════════════════
 const LS = {
-  save(key, data){ try{ localStorage.setItem('sm_'+key, JSON.stringify(data)); }catch(e){} },
-  load(key, def){ try{ const v=localStorage.getItem('sm_'+key); return v!==null?JSON.parse(v):def; }catch(e){ return def; } },
-  del(key){ try{ localStorage.removeItem('sm_'+key); }catch(e){} },
+  save(key, data){
+    try{
+      const str = JSON.stringify(data);
+      localStorage.setItem('sm_'+key, str);
+      return true;
+    }catch(e){
+      console.warn('LS.save error:', key, e);
+      // Si el storage está lleno, intentar limpiar datos viejos
+      if(e.name === 'QuotaExceededError'){
+        try{
+          // Eliminar keys antiguas que no sean cuentas ni sesión
+          Object.keys(localStorage).forEach(k=>{
+            if(k.startsWith('sm_') && k !== 'sm_cuentas' && k !== 'sm_sesionActiva'){
+              // Solo eliminar si es de otro usuario
+              if(!APP.usuario || !k.includes(APP.usuario.email)){
+                localStorage.removeItem(k);
+              }
+            }
+          });
+          localStorage.setItem('sm_'+key, JSON.stringify(data));
+          return true;
+        }catch(e2){ console.error('LS.save fallback error:', e2); }
+      }
+      return false;
+    }
+  },
+  load(key, def){
+    try{
+      const v = localStorage.getItem('sm_'+key);
+      if(v === null || v === undefined) return def;
+      const parsed = JSON.parse(v);
+      return parsed !== null && parsed !== undefined ? parsed : def;
+    }catch(e){
+      console.warn('LS.load error:', key, e);
+      return def;
+    }
+  },
+  del(key){
+    try{ localStorage.removeItem('sm_'+key); }catch(e){}
+  },
+  // Debug: ver todo lo guardado del usuario actual
+  debug(){
+    const keys = Object.keys(localStorage).filter(k=>k.startsWith('sm_'));
+    console.table(keys.map(k=>({key:k, size: localStorage.getItem(k)?.length||0})));
+  }
 };
 
 // ═══════════════════════════════════════════════════════
@@ -2109,26 +2159,65 @@ function resetFotoReg(){
 function userKey(email,section){ return `${email}_${section}`; }
 
 function cargarDatosUsuario(email){
-  APP.pacientes = LS.load(userKey(email,'pacientes'), DEFAULT_PACIENTES.map(p=>({...p})));
-  APP.aranceles = LS.load(userKey(email,'aranceles'), DEFAULT_ARANCELES.map(a=>({...a})));
-  APP.facturas  = LS.load(userKey(email,'facturas'), []);
-  APP.sesiones  = LS.load(userKey(email,'sesiones'), []);
-  APP.facturasId= LS.load(userKey(email,'facturasId'), 0);
-  APP.items     = [];
+  // Cargar con validación — asegurar que sean arrays
+  const rawPac = LS.load(userKey(email,'pacientes'), null);
+  const rawAr  = LS.load(userKey(email,'aranceles'), null);
+  const rawFac = LS.load(userKey(email,'facturas'),  null);
+  const rawSes = LS.load(userKey(email,'sesiones'),  null);
+
+  APP.pacientes  = Array.isArray(rawPac) ? rawPac : DEFAULT_PACIENTES.map(p=>({...p}));
+  APP.aranceles  = Array.isArray(rawAr)  ? rawAr  : DEFAULT_ARANCELES.map(a=>({...a}));
+  APP.facturas   = Array.isArray(rawFac) ? rawFac : [];
+  APP.sesiones   = Array.isArray(rawSes) ? rawSes : [];
+  APP.facturasId = LS.load(userKey(email,'facturasId'), 0) || 0;
+  APP.items      = [];
+
+  // Restaurar número de comprobante
+  const lastNum = LS.load(userKey(email,'lastNum'), '0001-00000001');
+  setTimeout(()=>{
+    const el = document.getElementById('c-num');
+    if(el && lastNum) el.value = lastNum;
+  }, 150);
+
+  console.log(`[SanaMente] Datos cargados para ${email}:`, {
+    pacientes: APP.pacientes.length,
+    aranceles: APP.aranceles.length,
+    facturas:  APP.facturas.length,
+    sesiones:  APP.sesiones.length,
+  });
 }
 
 function guardarDatosUsuario(){
   if(!APP.usuario) return;
-  const em=APP.usuario.email;
-  LS.save(userKey(em,'pacientes'), APP.pacientes);
-  LS.save(userKey(em,'aranceles'), APP.aranceles);
-  LS.save(userKey(em,'facturas'),  APP.facturas);
-  LS.save(userKey(em,'sesiones'),  APP.sesiones);
-  LS.save(userKey(em,'facturasId'),APP.facturasId);
+  const em = APP.usuario.email;
+  LS.save(userKey(em,'pacientes'),  APP.pacientes);
+  LS.save(userKey(em,'aranceles'),  APP.aranceles);
+  LS.save(userKey(em,'facturas'),   APP.facturas);
+  LS.save(userKey(em,'sesiones'),   APP.sesiones);
+  LS.save(userKey(em,'facturasId'), APP.facturasId);
+  // Guardar número actual de comprobante
+  const numEl = document.getElementById('c-num');
+  if(numEl && numEl.value) LS.save(userKey(em,'lastNum'), numEl.value);
 }
 
-// Guardado automático
-function autosave(){ guardarDatosUsuario(); }
+// Guardado automático con debounce
+let _saveTimer = null;
+function autosave(){
+  guardarDatosUsuario();
+  // También actualizar la cuenta en cuentas (por si cambió algo del perfil)
+  if(APP.usuario) LS.save('cuentas', APP.cuentas);
+}
+function autosaveLazy(){
+  clearTimeout(_saveTimer);
+  _saveTimer = setTimeout(autosave, 800);
+}
+
+// Guardar al cerrar/cambiar tab
+window.addEventListener('beforeunload', ()=>{ if(APP.usuario) guardarDatosUsuario(); });
+window.addEventListener('visibilitychange', ()=>{ if(document.hidden && APP.usuario) guardarDatosUsuario(); });
+
+// Guardar periódicamente cada 30s mientras la app está activa
+setInterval(()=>{ if(APP.usuario) guardarDatosUsuario(); }, 30000);
 
 // ═══════════════════════════════════════════════════════
 // REGISTRO
@@ -2331,56 +2420,297 @@ function calcCoseguro(){
 }
 
 // ═══════════════════════════════════════════════════════
-// IA
+// IA — SUGERENCIAS PSICOPEDAGÓGICAS
 // ═══════════════════════════════════════════════════════
 function toggleAI(){
-  const p=document.getElementById('ai-panel');
+  const p = document.getElementById('ai-panel');
   if(!p) return;
-  const visible=p.style.display!=='none';
-  p.style.display=visible?'none':'block';
-  if(!visible) document.getElementById('ai-ctx').focus();
-}
-async function runAI(){
-  const sp=document.getElementById('ai-sp');
-  const sugs=document.getElementById('ai-sugs');
-  if(!sp||!sugs) return;
-  const ctx=G.val('ai-ctx');
-  const os=G.val('p-os')||'particular';
-  const tipo=G.val('p-tipo');
-  const p=APP.usuario;
-  const emisora=p?`${p.titulo} ${p.nombre} ${p.apellido}`:'psicopedagoga';
-  sp.style.display='inline-block';
-  sugs.innerHTML='<div style="font-size:12px;color:var(--ink4);padding:6px 0;">Analizando el caso...</div>';
-  const prompt=`Sos un asistente de facturación especializado en psicopedagogía argentina. Profesional: "${emisora}". Paciente tipo: "${tipo}". Cobertura: "${os}". ${ctx?`Contexto: "${ctx}".`:''}
-Generá exactamente 4 sugerencias de prestaciones psicopedagógicas para facturar.
-REGLAS: Prestaciones de salud en Argentina IVA 0%. Precios realistas ARS 2025. Nomenclatura psicopedagógica formal.
-Respondé ÚNICAMENTE con JSON válido, sin markdown: [{"desc":"descripción profesional","precio":12000,"iva":0,"qty":1},...]`;
-  try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:900,messages:[{role:'user',content:prompt}]})});
-    if(!res.ok) throw new Error('HTTP '+res.status);
-    const data=await res.json();
-    if(data.error) throw new Error(data.error.message);
-    const txt=(data.content||[]).map(b=>b.text||'').join('');
-    const match=txt.match(/\[[\s\S]*\]/);
-    if(!match) throw new Error('Respuesta inesperada');
-    const arr=JSON.parse(match[0]);
-    sp.style.display='none'; sugs.innerHTML='';
-    arr.forEach(s=>{
-      const d=document.createElement('div');
-      d.className='ai-sug';
-      d.innerHTML=`<div class="ai-si"><div class="ai-sd">${G.esc(s.desc)}</div><div class="ai-sm">Cant: ${s.qty} · IVA: ${s.iva}%</div></div><span class="ai-sp2">${G.fmt(s.precio)}</span><button class="ai-add">+ Agregar</button>`;
-      d.querySelector('.ai-add').addEventListener('click',e=>{
-        e.stopPropagation();
-        addItem(s.desc,s.qty,s.precio,s.iva);
-        d.classList.add('used'); d.querySelector('.ai-add').textContent='✓ Agregado';
-        notify('Ítem agregado ✓');
-      });
-      sugs.appendChild(d);
-    });
-  }catch(err){
-    sp.style.display='none';
-    sugs.innerHTML=`<div style="font-size:12px;color:var(--err);padding:6px 0;">Error: ${G.esc(err.message)}. Revisá tu conexión.</div>`;
+  const visible = p.style.display !== 'none';
+  p.style.display = visible ? 'none' : 'block';
+  if(!visible){
+    // Actualizar contexto visible
+    const pac  = G.val('p-nombre').trim() || 'sin paciente';
+    const os   = G.val('p-os') || 'Particular';
+    const tipo = G.val('p-tipo') || '';
+    const el1  = document.getElementById('ai-ctx-pac');
+    const el2  = document.getElementById('ai-ctx-os');
+    if(el1) el1.textContent = pac + (tipo ? ` · ${tipo}` : '');
+    if(el2) el2.textContent = os;
+    const ctxInput = document.getElementById('ai-ctx');
+    if(ctxInput) ctxInput.focus();
+    // Auto-correr si hay paciente y el panel está vacío
+    const sugs = document.getElementById('ai-sugs');
+    if(sugs && !sugs.querySelector('.ai-sug') && pac !== 'sin paciente'){
+      runAI();
+    }
   }
+}
+
+async function runAI(){
+  const sp   = document.getElementById('ai-sp');
+  const sugs = document.getElementById('ai-sugs');
+  if(!sp || !sugs) return;
+
+  // Recopilar contexto
+  const ctx        = G.val('ai-ctx').trim();
+  const os         = G.val('p-os') || 'Particular';
+  const tipo       = G.val('p-tipo') || 'Adulto (18+)';
+  const pacNombre  = G.val('p-nombre').trim();
+  const p          = APP.usuario;
+  const profesional = p ? `${p.titulo||''} ${p.nombre} ${p.apellido}`.trim() : 'Psicopedagoga';
+
+  // Aranceles propios del profesional
+  const arancelesCtx = APP.aranceles.length
+    ? APP.aranceles.slice(0,12).map(a=>`- ${a.desc}: $${a.precio} (IVA ${a.iva}%)`).join('\n')
+    : DEFAULT_ARANCELES.slice(0,6).map(a=>`- ${a.desc}: $${a.precio} (IVA ${a.iva}%)`).join('\n');
+
+  // Historial de sesiones del paciente
+  const sesionesPac = pacNombre
+    ? APP.sesiones
+        .filter(s => s.pac.toLowerCase().includes(pacNombre.toLowerCase()))
+        .slice(0,6)
+        .map(s=>`- ${s.fecha}: ${s.tipo} (${s.dur}) $${s.monto} — ${s.estado}`)
+        .join('\n') || 'Sin sesiones previas registradas'
+    : 'Paciente nuevo';
+
+  // Items ya cargados en la factura actual
+  const itemsActuales = APP.items.length
+    ? APP.items.map(i=>`- ${i.desc}: $${i.price}`).join('\n')
+    : 'Ninguno todavía';
+
+  sp.style.display = 'inline-block';
+  sugs.innerHTML = `<div style="font-size:12px;color:var(--ink3);padding:8px 0;display:flex;align-items:center;gap:8px;">
+    <span style="display:inline-block;width:13px;height:13px;border:2px solid rgba(201,150,74,.3);border-top-color:var(--tc);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0;"></span>
+    <span>Analizando contexto y generando sugerencias...</span>
+  </div>`;
+
+  const prompt = `Sos un asistente experto en facturación psicopedagógica argentina. Tu tarea es sugerir ítems de prestaciones para incluir en una factura, basándote en toda la información disponible.
+
+DATOS DEL PROFESIONAL:
+- Nombre: ${profesional}
+- Condición IVA: ${p?.iva || 'Monotributista'}
+
+DATOS DEL PACIENTE:
+- Nombre: ${pacNombre || 'No especificado'}
+- Tipo: ${tipo}
+- Obra social / Cobertura: ${os}
+${ctx ? `\nCONTEXTO CLÍNICO / SESIÓN:\n${ctx}` : ''}
+
+ARANCELES DEL PROFESIONAL (usá estos precios como referencia):
+${arancelesCtx}
+
+HISTORIAL DE SESIONES CON ESTE PACIENTE:
+${sesionesPac}
+
+ÍTEMS YA CARGADOS EN ESTA FACTURA:
+${itemsActuales}
+
+REGLAS IMPORTANTES:
+1. Generá EXACTAMENTE 4 prestaciones psicopedagógicas distintas para facturar
+2. NO repitas ítems que ya estén cargados en la factura
+3. Priorizá siempre las prestaciones del listado de aranceles del profesional cuando correspondan al contexto
+4. IVA siempre 0% para prestaciones de salud (Ley 23.877 — exentas)
+5. Precios en pesos argentinos, acordes a los aranceles del profesional (si no hay, usar valores de mercado 2024-2025)
+6. Nomenclatura formal psicopedagógica argentina (ej: "Evaluación psicopedagógica integral", "Sesión de intervención individual")
+7. Si hay contexto clínico específico (dislexia, TDAH, escritura, etc.), adaptá las prestaciones a ese cuadro
+8. Si el paciente es niño/a (0-12), incluir prestaciones pediátricas cuando corresponda
+9. Si tiene obra social, considerá la nomenclatura habitual de esa cobertura
+10. Si hay historial de sesiones, sugerí continuidad lógica del tratamiento
+11. qty siempre 1 a menos que el contexto indique claramente múltiples sesiones
+12. Variar las sugerencias: no repitas el mismo tipo de prestación 4 veces
+
+Respondé ÚNICAMENTE con un array JSON válido. Sin markdown, sin texto extra, sin backticks. Exactamente este formato:
+[{"desc":"Descripción formal de la prestación","precio":12000,"iva":0,"qty":1},{"desc":"...","precio":0,"iva":0,"qty":1},{"desc":"...","precio":0,"iva":0,"qty":1},{"desc":"...","precio":0,"iva":0,"qty":1}]`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1024,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    if(!res.ok){
+      const errData = await res.json().catch(()=>({}));
+      throw new Error(errData.error?.message || `HTTP ${res.status}`);
+    }
+
+    const data = await res.json();
+    if(data.error) throw new Error(data.error.message);
+
+    // Extraer texto de la respuesta
+    const txt = (data.content || [])
+      .filter(b => b.type === 'text')
+      .map(b => b.text)
+      .join('');
+
+    // Parsear JSON — buscar el array aunque haya texto extra
+    let arr = null;
+    const match = txt.match(/\[[\s\S]*\]/);
+    if(match){
+      arr = JSON.parse(match[0]);
+    } else {
+      // Intentar parsear directamente
+      arr = JSON.parse(txt.trim());
+    }
+
+    if(!Array.isArray(arr) || !arr.length) throw new Error('Respuesta vacía');
+
+    // Validar y normalizar cada ítem
+    arr = arr.map(s=>({
+      desc:  String(s.desc || s.description || s.nombre || '').trim(),
+      precio: Number(s.precio || s.price || s.monto || 0),
+      iva:    Number(s.iva || 0),
+      qty:    Number(s.qty || s.cantidad || 1),
+    })).filter(s => s.desc && s.precio > 0);
+
+    if(!arr.length) throw new Error('Sin ítems válidos');
+
+    renderAISugerencias(arr, sp, sugs, false);
+
+  } catch(err) {
+    console.warn('AI API error:', err.message);
+    sp.style.display = 'none';
+
+    // Fallback inteligente local — usa los aranceles propios + contexto
+    const fallback = generarSugerenciasLocales(tipo, os, ctx, pacNombre);
+    if(fallback.length){
+      renderAISugerencias(fallback, sp, sugs, true);
+    } else {
+      sugs.innerHTML = `<div style="font-size:12px;color:var(--ink3);padding:8px 0;">
+        <div style="color:var(--warn);margin-bottom:6px;">⚠ No se pudo conectar con la IA (${G.esc(err.message)})</div>
+        <a onclick="runAI()" style="color:var(--tcl);cursor:pointer;font-weight:500;">↺ Reintentar</a>
+        <span style="color:var(--ink4);"> · </span>
+        <a onclick="abrirDesdeAranceles()" style="color:var(--ink3);cursor:pointer;">Desde aranceles →</a>
+        <div style="color:var(--ink4);font-size:11px;margin-top:6px;">También podés agregar ítems manualmente o desde tus aranceles.</div>
+      </div>`;
+    }
+  }
+}
+
+// Sugerencias inteligentes locales — usa aranceles del usuario + scoring por contexto
+function generarSugerenciasLocales(tipo, os, ctx, pacNombre){
+  const ctxLower = (ctx || '').toLowerCase() + ' ' + (pacNombre || '').toLowerCase();
+  const esNino   = /0.12|niñ|infant|pediat|pequeñ/.test(tipo.toLowerCase() + ' ' + ctxLower);
+  const esAdol   = /13.17|adoles|escolar/.test(tipo.toLowerCase() + ' ' + ctxLower);
+  const esMayor  = /65\+|mayor|geriat/.test(tipo.toLowerCase() + ' ' + ctxLower);
+  const esPAMI   = os === 'PAMI';
+
+  // Usar aranceles propios si existen, sino los predeterminados
+  const pool = (APP.aranceles.length ? [...APP.aranceles] : [...DEFAULT_ARANCELES])
+    .map(a => ({...a}));
+
+  // Scoring contextual
+  const scored = pool.map(a => {
+    let score = Math.random() * 0.5; // pequeña variación aleatoria
+    const d = (a.desc || '').toLowerCase();
+    // Tipo de paciente
+    if(esNino  && /niñ|infant|pediat|pequeñ/.test(d)) score += 4;
+    if(esAdol  && /adoles|escolar/.test(d))            score += 3;
+    if(esMayor && /mayor|geriat|cognitiv/.test(d))     score += 3;
+    if(esPAMI  && /pami|mayor|cognitiv/.test(d))       score += 2;
+    // Contexto clínico
+    if(/evaluac/.test(ctxLower)  && /evaluac/.test(d))   score += 5;
+    if(/informe/.test(ctxLower)  && /informe/.test(d))    score += 5;
+    if(/diagnos/.test(ctxLower)  && /diagnos/.test(d))    score += 5;
+    if(/dislexia/.test(ctxLower) && /lect|escri|dislexia/.test(d)) score += 5;
+    if(/disgrafia/.test(ctxLower)&& /escri|grafia/.test(d)) score += 5;
+    if(/discalcu/.test(ctxLower) && /matem|calcu|numer/.test(d)) score += 5;
+    if(/tdah/.test(ctxLower)     && /atenci|concent|cogni/.test(d)) score += 5;
+    if(/memoria/.test(ctxLower)  && /memoria|cogni/.test(d)) score += 4;
+    if(/intervenc/.test(ctxLower)&& /intervenc/.test(d))  score += 4;
+    if(/orient/.test(ctxLower)   && /orient|familiar/.test(d)) score += 4;
+    if(/familiar/.test(ctxLower) && /familiar|tutor|padre/.test(d)) score += 4;
+    if(/sesion/.test(ctxLower)   && /sesion/.test(d))     score += 3;
+    if(/devoluc/.test(ctxLower)  && /devoluc/.test(d))    score += 4;
+    if(/estimul/.test(ctxLower)  && /estimul/.test(d))    score += 4;
+    return { ...a, _score: score };
+  });
+
+  scored.sort((a, b) => b._score - a._score);
+
+  // Tomar los mejores 4 sin repetir categorías si es posible
+  const result = [];
+  const usedCats = new Set();
+  for(const a of scored){
+    if(result.length >= 4) break;
+    if(!usedCats.has(a.cat) || result.length >= scored.length - 1){
+      result.push({ desc: a.desc, precio: a.precio || a.price || 12000, iva: a.iva || 0, qty: 1 });
+      usedCats.add(a.cat);
+    }
+  }
+
+  // Completar si hay menos de 4
+  const genericas = [
+    { desc:'Sesión de intervención psicopedagógica individual (45 min)', precio:12000, iva:0, qty:1 },
+    { desc:'Evaluación psicopedagógica integral (60 min)',               precio:18500, iva:0, qty:1 },
+    { desc:'Informe psicopedagógico diagnóstico',                        precio:15000, iva:0, qty:1 },
+    { desc:'Orientación a padres y red de apoyo escolar',                precio:10500, iva:0, qty:1 },
+    { desc:'Devolución diagnóstica al paciente y familia',               precio:10500, iva:0, qty:1 },
+    { desc:'Estimulación cognitiva y académica (60 min)',                precio:14000, iva:0, qty:1 },
+  ];
+  let gi = 0;
+  while(result.length < 4 && gi < genericas.length){
+    const g = genericas[gi++];
+    if(!result.some(r => r.desc === g.desc)) result.push(g);
+  }
+
+  return result.slice(0, 4);
+}
+
+function renderAISugerencias(arr, sp, sugs, esLocal = false){
+  sp.style.display = 'none';
+
+  const badge = esLocal
+    ? `<div style="margin-bottom:10px;">
+        <span style="background:rgba(201,150,74,.1);color:var(--tcl);border:1px solid rgba(201,150,74,.2);border-radius:20px;padding:3px 10px;font-size:10px;font-weight:500;">
+          ⚡ Sugerencias basadas en tus aranceles
+        </span>
+      </div>`
+    : `<div style="margin-bottom:10px;">
+        <span style="background:rgba(107,158,122,.1);color:var(--sg);border:1px solid rgba(107,158,122,.2);border-radius:20px;padding:3px 10px;font-size:10px;font-weight:500;">
+          ✦ Generado por IA · ${arr.length} sugerencias
+        </span>
+      </div>`;
+
+  sugs.innerHTML = badge;
+
+  arr.slice(0, 4).forEach((s, idx) => {
+    const d = document.createElement('div');
+    d.className = 'ai-sug';
+    d.style.cssText = 'animation:fadeUp .3s ease both;animation-delay:' + (idx * 0.07) + 's;';
+    d.innerHTML = `
+      <div class="ai-si" style="flex:1;min-width:0;">
+        <div class="ai-sd" style="font-size:12.5px;font-weight:500;color:var(--ink);line-height:1.4;">${G.esc(s.desc)}</div>
+        <div class="ai-sm" style="font-size:11px;color:var(--ink4);margin-top:2px;">
+          Cant: ${s.qty || 1} · IVA: ${s.iva || 0}% · Exento Ley 23.877
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0;">
+        <span class="ai-sp2" style="font-weight:600;color:var(--tcl);font-size:13px;">${G.fmt(s.precio)}</span>
+        <button class="ai-add" style="white-space:nowrap;">+ Agregar</button>
+      </div>`;
+
+    d.querySelector('.ai-add').addEventListener('click', e => {
+      e.stopPropagation();
+      addItem(s.desc, s.qty || 1, s.precio, s.iva || 0);
+      d.classList.add('used');
+      d.querySelector('.ai-add').textContent = '✓ Agregado';
+      d.style.opacity = '0.5';
+      notify('✓ ' + s.desc.substring(0, 40) + '...');
+    });
+
+    sugs.appendChild(d);
+  });
+
+  // Botón regenerar
+  const regen = document.createElement('div');
+  regen.style.cssText = 'margin-top:8px;padding-top:8px;border-top:1px solid var(--bd);text-align:right;';
+  regen.innerHTML = `<button onclick="document.getElementById('ai-sugs').innerHTML='';runAI()" style="font-size:11px;color:var(--ink4);background:none;border:none;cursor:pointer;font-family:inherit;padding:0;">↺ Regenerar sugerencias</button>`;
+  sugs.appendChild(regen);
 }
 
 // ═══════════════════════════════════════════════════════
@@ -2404,11 +2734,14 @@ function guardarFactura(){
     items:APP.items.map(i=>({...i})),
   };
   APP.facturas.unshift(factura);
-  G.set('c-num',incNum(num));
+  const newNum = incNum(num);
+  G.set('c-num', newNum);
   APP.items=[]; renderItems(); G.set('obs','');
   const aip=document.getElementById('ai-panel');
   if(aip) aip.style.display='none';
   autosave();
+  // Guardar número incremental
+  if(APP.usuario) LS.save(userKey(APP.usuario.email,'lastNum'), newNum);
   notify(`${factura.tipo} N° ${num} guardada ✓`);
 }
 function incNum(n){
@@ -2628,6 +2961,30 @@ function usarArancel(i){
   const a=APP.aranceles[i]; addItem(a.desc,1,a.precio,a.iva);
   showView('nueva'); notify('Arancel agregado ✓');
 }
+function abrirDesdeAranceles(){
+  // Mostrar panel de aranceles directamente en la vista nueva
+  const panel = document.getElementById('ar-pick-panel');
+  if(panel){ panel.style.display = panel.style.display === 'none' ? 'block' : 'none'; return; }
+  // Fallback: abrir modal de aranceles inline
+  if(!APP.aranceles.length){ notify('Primero cargá aranceles en el módulo "Aranceles"','err'); return; }
+  let html = '<div style="background:var(--cr3);border:1px solid var(--bd);border-radius:12px;padding:1rem;margin-top:.5rem;" id="ar-pick-panel">';
+  html += '<div style="font-size:11px;color:var(--ink3);margin-bottom:.75rem;font-weight:500;">Seleccioná un arancel para agregar:</div>';
+  APP.aranceles.forEach((a,i)=>{
+    html += `<div onclick="addItem('${G.esc(a.desc).replace(/'/g,'\\\'').replace(/"/g,'&quot;')}',1,${a.precio},${a.iva});document.getElementById('ar-pick-panel')?.remove();notify('Arancel agregado ✓');"
+      style="display:flex;justify-content:space-between;align-items:center;padding:.5rem .75rem;border-radius:8px;cursor:pointer;border:1px solid var(--bd);margin-bottom:.375rem;transition:background .15s;"
+      onmouseover="this.style.background='rgba(201,150,74,.08)'" onmouseout="this.style.background=''">
+      <span style="font-size:12.5px;color:var(--ink);">${G.esc(a.desc)}</span>
+      <span style="font-size:12px;color:var(--tcl);font-weight:600;margin-left:1rem;white-space:nowrap;">${G.fmt(a.precio)}</span>
+    </div>`;
+  });
+  html += '</div>';
+  const aiWrap = document.getElementById('ai-wrap-inner');
+  if(aiWrap){ aiWrap.insertAdjacentHTML('afterend', html); }
+  else {
+    const sugs = document.getElementById('ai-sugs');
+    if(sugs) sugs.innerHTML = html;
+  }
+}
 function guardarArancel(){
   const d=G.val('na-desc').trim();
   if(!d){ notify('Ingresá la descripción','err'); return; }
@@ -2708,8 +3065,8 @@ const INITIAL_REVIEWS = [
   {nombre:'Prof. Andrea Torres',rol:'Prof. en Psicopedagogía · Buenos Aires',stars:4,text:'Muy buena plataforma. Me falta un poco de experiencia para aprovecharla al máximo pero el soporte fue rápido cuando tuve una duda. El PDF queda muy profesional y mis pacientes me preguntan dónde lo hago.',badge:'PDF profesional'},
 ];
 
-function loadReviews(){ return LS.load('sm_reviews', INITIAL_REVIEWS); }
-function saveReviews(reviews){ LS.save('sm_reviews', reviews); }
+function loadReviews(){ return LS.load('reviews', INITIAL_REVIEWS); }
+function saveReviews(reviews){ LS.save('reviews', reviews); }
 
 function starsHTML(n){
   return Array.from({length:5},(_,i)=>`<span class="tcard-star">${i<n?'★':'☆'}</span>`).join('');
