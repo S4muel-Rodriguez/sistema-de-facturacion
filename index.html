@@ -41,8 +41,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--ink);line
 @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
 @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
 
-.page{display:none;min-height:100vh;}
-.page.active{display:block;}
+.page{display:none !important;min-height:100vh;}
+.page.active{display:block !important;}
+#page-terms.active,#page-privacy.active,#page-legal.active{display:flex !important;}
 #page-login.active,#page-app.active{display:flex;}
 
 /* ═══ NAV ═══ */
@@ -1881,7 +1882,7 @@ footer{
 <!-- ═══════════════════════════════════════════
      TÉRMINOS DE SERVICIO
 ════════════════════════════════════════════ -->
-<div id="page-terms" class="page" style="display:flex;flex-direction:column;padding-top:80px;padding-bottom:40px;">
+<div id="page-terms" class="page" style="flex-direction:column;padding-top:80px;padding-bottom:40px;">
   <div style="max-width:900px;margin:0 auto;width:100%;padding:0 20px;">
     <button onclick="gotoLanding()" style="background:none;border:none;color:var(--tc);cursor:pointer;font-size:1rem;margin-bottom:30px;font-weight:500;">← Volver</button>
     <h1 style="font-family:'Cormorant Garamond',serif;font-size:2.5rem;color:var(--tc);margin-bottom:10px;">Términos de Servicio</h1>
@@ -1922,7 +1923,7 @@ footer{
 <!-- ═══════════════════════════════════════════
      POLÍTICA DE PRIVACIDAD
 ════════════════════════════════════════════ -->
-<div id="page-privacy" class="page" style="display:flex;flex-direction:column;padding-top:80px;padding-bottom:40px;">
+<div id="page-privacy" class="page" style="flex-direction:column;padding-top:80px;padding-bottom:40px;">
   <div style="max-width:900px;margin:0 auto;width:100%;padding:0 20px;">
     <button onclick="gotoLanding()" style="background:none;border:none;color:var(--tc);cursor:pointer;font-size:1rem;margin-bottom:30px;font-weight:500;">← Volver</button>
     <h1 style="font-family:'Cormorant Garamond',serif;font-size:2.5rem;color:var(--tc);margin-bottom:10px;">Política de Privacidad</h1>
@@ -1962,7 +1963,7 @@ footer{
 <!-- ═══════════════════════════════════════════
      AVISO LEGAL
 ════════════════════════════════════════════ -->
-<div id="page-legal" class="page" style="display:flex;flex-direction:column;padding-top:80px;padding-bottom:40px;">
+<div id="page-legal" class="page" style="flex-direction:column;padding-top:80px;padding-bottom:40px;">
   <div style="max-width:900px;margin:0 auto;width:100%;padding:0 20px;">
     <button onclick="gotoLanding()" style="background:none;border:none;color:var(--tc);cursor:pointer;font-size:1rem;margin-bottom:30px;font-weight:500;">← Volver</button>
     <h1 style="font-family:'Cormorant Garamond',serif;font-size:2.5rem;color:var(--tc);margin-bottom:10px;">Aviso Legal</h1>
